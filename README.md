@@ -25,4 +25,4 @@ Set the respective widget's Action to Execute Shell Script/Task and set the scri
 
 ## Documentation
 [Toggl Track](track.toggl.com),
-[Toggl API](https://github.com/toggl/toggl_api_docs/blob/master/toggl_api.md), [BTT Docs](https://docs.folivora.ai/), [BTT Forum](https://community.folivora.ai/), [pypy](https://www.pypy.org/features.html)
+[Toggl API](https://github.com/toggl/toggl_api_docs/blob/master/toggl_api.md), [BTT Docs](https://docs.folivora.ai/), [BTT Forum](https://community.folivora.ai/), [PyPy](https://www.pypy.org/features.html)
