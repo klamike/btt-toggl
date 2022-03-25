@@ -5,21 +5,14 @@ from typing import Optional, Union
 from misc import vprint, get_data
 from config import API_TOKEN, PATH_TO_IMG_DIR, PATH_TO_CACHE_FILE, WID_PID_DICT, TAG_ALL_ENTRIES
 
-# Usage:
-
-## Checking status:
-# pypy3 btt-toggl.py status general
-# pypy3 btt-toggl.py status -w <wid> -p <pid>
-
-## Toggle projects (supports stopping, starting, and switching between projects):
-# pypy3 btt-toggl.py toggle -w <wid> -p <pid>
-
-## Stop/Start logging:
-# pypy3 btt-toggl.py stop
-# pypy3 btt-toggl.py start -w <wid> -p <pid>
-
-## Add tag to current entry:
-# pypy3 btt-toggl.py add_tag -t <tag>
+## Usage:
+# btt-toggl.py status                             # prints general BTT style string (active if logging any project)
+# btt-toggl.py status -w <wid> -p <pid>           # prints BTT style string for <wid> <pid> (active only if logging <wid> <pid>)
+# btt-toggl.py toggle -w <wid> -p <pid> -t <tag>  # if <wid> <pid> is currently running, stop entry. otherwise, stop current and start new entry (tag optional)
+# btt-toggl.py add_tag -t <tag>                   # adds tag to current entry
+# btt-toggl.py start -w <wid> -p <pid> -t <tag>   # starts new entry (tag optional)
+# btt-toggl.py stop                               # stops current entry
+# btt-toggl.py -h                                 # shows help message
 
 CURL   = "curl -s "
 AUTH   = f"-u {API_TOKEN}:api_token "
