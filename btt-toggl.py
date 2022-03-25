@@ -124,11 +124,11 @@ if __name__ == '__main__':
 
     ## validate args
     if args.tag is not None:
-        assert args.mode in ['add_tag', 'start', 'toggle'], f"Tag cannot be set in {args.mode} mode" # stop or status
+        assert args.mode in ['add_tag', 'start', 'toggle'], f"Tag cannot be set in {args.mode} mode\n" # stop or status
     if args.mode == 'start':
-        assert args.wid is not None and args.pid is not None, f"Workspace ID and Project ID must be set in {args.mode} mode" # start
+        assert args.wid is not None and args.pid is not None, f"Workspace ID and Project ID must be set in {args.mode} mode\n" # start
     if general:
-        assert args.mode in ['status', 'stop', 'add_tag'], f"Workspace ID and Project ID must be set in {args.mode} mode" # start, toggle
+        assert args.mode in ['status', 'stop', 'add_tag'], f"Workspace ID and Project ID must be set in {args.mode} mode\n" # start, toggle
 
     ## validate paths
     try:
@@ -148,19 +148,18 @@ if __name__ == '__main__':
         main(general, args.mode, args.wid, args.pid, args.tag)
         exit(0)
     except subprocess.CalledProcessError as e:
-        print(f"cURL Return code {e.returncode}", file=sys.stderr)
-        if args.mode == 'status':  # if curl fails, silently assume we're inactive. this also doesn't update the cache
+        print(f"cURL failed ({e.returncode})", file=sys.stderr)
+        if args.mode == 'status':  # if curl fails, (mostly) silently assume we're inactive. this also doesn't update the cache
             w, p = (int(args.wid), int(args.pid)) if not general else (None, None)
             if general: print(json.dumps({"text":" ",                "icon_path":PATH_TO_IMG_DIR + "inactive.png"}))
             else:       print(json.dumps({"text":WID_PID_DICT[w][p], "icon_path":PATH_TO_IMG_DIR + "inactive.png"}))
 
     except json.JSONDecodeError as e: # for other exceptions, we shouldn't be silent
-        print(f"\nDid you forget to change your API key? Make sure it's correct in config.py\n", file=sys.stderr)
+        print(f"\nDid you change your API key? Make sure it's correct in config.py\n", file=sys.stderr)
         from traceback import print_exc; print_exc()
-        print(f"\nDid you forget to change your API key? Make sure it's correct in config.py\n", file=sys.stderr)
-
+        print(f"\nDid you change your API key? Make sure it's correct in config.py\n", file=sys.stderr)
     except Exception as e:
-        print(f"Encountered uncaught exception {e.__str__}. Please report to https://github.com/klamike/btt-toggl/issues", file=sys.stderr)
-
+        from traceback import format_exc
+        print(f"Encountered uncaught exception:\n\n {format_exc()}\n Please report to https://github.com/klamike/btt-toggl/issues\n", file=sys.stderr)
     finally: # we exit(0) after main if successful, so this block only runs an exception
         exit(1)
