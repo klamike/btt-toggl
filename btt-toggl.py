@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 from config import API_TOKEN, PATH_TO_IMG_DIR, PATH_TO_CACHE_FILE, WID_PID_DICT
 from misc import vprint, get_data
+from config import API_TOKEN, PATH_TO_IMG_DIR, PATH_TO_CACHE_FILE, WID_PID_DICT, TAG_ALL_ENTRIES
 
 # Usage:
 
@@ -58,7 +59,9 @@ def get_current() -> Optional[dict]:
 def start(wid:OptStrInt, pid:OptStrInt, tag:Optional[str]=None) -> Optional[dict]:
     ## start a new entry
     d = json.dumps({"time_entry":
-                         {"tags": [tag, "btt-toggl"] if tag else ["btt-toggl"],
+                         {"tags": ([tag, "btt-toggl"] if tag else ["btt-toggl"]) \
+                                         if TAG_ALL_ENTRIES else \
+                                  ([tag] if tag else []),
                            "wid": wid,
                            "pid": pid,
                   "created_with": "curl"}})
