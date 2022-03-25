@@ -2,8 +2,8 @@
 import json, pathlib, argparse
 from typing import NoReturn, Optional, Union
 
-from misc import CurlReturnCodeException, vprint, get_data
 from config import API_TOKEN, PATH_TO_IMG_DIR, PATH_TO_CACHE_FILE, WID_PID_DICT
+from misc import vprint, get_data
 
 # Usage:
 
@@ -144,10 +144,21 @@ if __name__ == '__main__':
     ## run script
     try:
         main(general, args.mode, args.wid, args.pid, args.tag)
-    except CurlReturnCodeException as e: # if curl fails, silently assume we're inactive 
-        import sys                       # this also doesn't update the cache
+        exit(0)
+    except subprocess.CalledProcessError as e:
         print(f"cURL Return code {e.returncode}", file=sys.stderr)
-        if args.mode == 'status':
+        if args.mode == 'status':  # if curl fails, silently assume we're inactive. this also doesn't update the cache
             w, p = (int(args.wid), int(args.pid)) if not general else (None, None)
             if general: print(json.dumps({"text":" ",                "icon_path":PATH_TO_IMG_DIR + "inactive.png"}))
             else:       print(json.dumps({"text":WID_PID_DICT[w][p], "icon_path":PATH_TO_IMG_DIR + "inactive.png"}))
+
+    except json.JSONDecodeError as e: # for other exceptions, we shouldn't be silent
+        print(f"\nDid you forget to change your API key? Make sure it's correct in config.py\n", file=sys.stderr)
+        from traceback import print_exc; print_exc()
+        print(f"\nDid you forget to change your API key? Make sure it's correct in config.py\n", file=sys.stderr)
+
+    except Exception as e:
+        print(f"Encountered uncaught exception {e.__str__}. Please report to https://github.com/klamike/btt-toggl/issues", file=sys.stderr)
+
+    finally: # we exit(0) after main if successful, so this block only runs an exception
+        exit(1)
