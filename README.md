@@ -24,5 +24,5 @@ Set the respective widget's Action to Execute Shell Script/Task and set the scri
 ![multi](readme_img/multi.png)
 
 ## Documentation
-[Toggl Track](track.toggl.com),
+[Toggl Track](https://track.toggl.com),
 [Toggl API](https://github.com/toggl/toggl_api_docs/blob/master/toggl_api.md), [BTT Docs](https://docs.folivora.ai/), [BTT Forum](https://community.folivora.ai/), [PyPy](https://www.pypy.org/features.html)
