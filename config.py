@@ -11,4 +11,4 @@ PATH_TO_CACHE_FILE = '/path/to/cache/status.json'
 # WID_PID_DICT = {<wid>: {<pid>: <display name>, ...}, ...}
 
 # by default, btt-toggl will apply the tag "btt-toggl" to all entries it creates
-TAG_ALL_ENTRIES = False
+TAG_ALL_ENTRIES = True
