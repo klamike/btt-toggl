@@ -129,6 +129,9 @@ if __name__ == '__main__':
         assert args.wid is not None and args.pid is not None, f"Workspace ID and Project ID must be set in {args.mode} mode\n" # start
     if general:
         assert args.mode in ['status', 'stop', 'add_tag'], f"Workspace ID and Project ID must be set in {args.mode} mode\n" # start, toggle
+    else:
+        assert int(args.wid) in WID_PID_DICT.keys(), f"Workspace ID {args.wid} not found. Make sure WID_PID_DICT is correct in config.py\n"
+        assert int(args.pid) in WID_PID_DICT[int(args.wid)].keys(), f"Project ID {args.pid} not found. Make sure WID_PID_DICT is correct in config.py\n"
 
     ## validate paths
     try:
