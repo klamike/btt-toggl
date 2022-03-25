@@ -130,7 +130,18 @@ if __name__ == '__main__':
     if general:
         assert args.mode in ['status', 'stop', 'add_tag'], f"Workspace ID and Project ID must be set in {args.mode} mode" # start, toggle
 
-    pathlib.Path(PATH_TO_CACHE_FILE).parent.mkdir(parents=True, exist_ok=True) # make sure folder for cache file exists
+    ## validate paths
+    try:
+        pathlib.Path(PATH_TO_CACHE_FILE).parent.mkdir(parents=True, exist_ok=True) # make sure folder for cache file exists
+        pathlib.Path(PATH_TO_CACHE_FILE).touch()                                   # make sure we can write to cache file
+        assert pathlib.Path(PATH_TO_IMG_DIR + '/active.png').is_file()             # make sure active.png exists
+        assert pathlib.Path(PATH_TO_IMG_DIR + '/inactive.png').is_file()           # make sure inactive.png exists
+    except PermissionError as e:
+        print(f"Is your cache file in a writeable directory?\n", file=sys.stderr)
+        exit(1)
+    except AssertionError as e:
+        print(f"Your image files seem to be missing.\n", file=sys.stderr)
+        exit(1)
 
     ## run script
     try:
