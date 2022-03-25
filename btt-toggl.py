@@ -1,8 +1,7 @@
 #!/usr/bin/env pypy3
-import json, pathlib, argparse
+import sys, pathlib, argparse, subprocess, json
 from typing import Optional, Union
 
-from config import API_TOKEN, PATH_TO_IMG_DIR, PATH_TO_CACHE_FILE, WID_PID_DICT
 from misc import vprint, get_data
 from config import API_TOKEN, PATH_TO_IMG_DIR, PATH_TO_CACHE_FILE, WID_PID_DICT, TAG_ALL_ENTRIES
 
@@ -22,14 +21,12 @@ from config import API_TOKEN, PATH_TO_IMG_DIR, PATH_TO_CACHE_FILE, WID_PID_DICT,
 ## Add tag to current entry:
 # pypy3 btt-toggl.py add_tag -t <tag>
 
-# TODO: add support for tags to status/toggle/stop
-
-CURL         = "curl -s "
-AUTH         = f"-u {API_TOKEN}:api_token "
-HEADER       = '-H "Content-Type: application/json" '
-DATA         = " -d '{}' "
-TIME_ENTRIES = "https://api.track.toggl.com/api/v8/time_entries"
-GET, POST, PUT       = "-X GET ", "-X POST ", "-X PUT "
+CURL   = "curl -s "
+AUTH   = f"-u {API_TOKEN}:api_token "
+HEADER = '-H "Content-Type: application/json" '
+DATA   = " -d '{}' "
+GET, POST, PUT = "-X GET ", "-X POST ", "-X PUT "
+TIME_ENTRIES   = "https://api.track.toggl.com/api/v8/time_entries"
 CURRENT, START, STOP = "/current", "/start", "/stop"
 
 OptStrInt = Optional[Union[str, int]]
