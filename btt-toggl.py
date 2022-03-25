@@ -1,6 +1,6 @@
 #!/usr/bin/env pypy3
 import json, pathlib, argparse
-from typing import NoReturn, Optional, Union
+from typing import Optional, Union
 
 from config import API_TOKEN, PATH_TO_IMG_DIR, PATH_TO_CACHE_FILE, WID_PID_DICT
 from misc import vprint, get_data
@@ -109,7 +109,7 @@ def print_out(data:Optional[dict], general:bool=False, wid:OptStrInt=None, pid:O
     elif active:           return vprint(json.dumps({"text":WID_PID_DICT[w][p], "icon_path":PATH_TO_IMG_DIR +   "active.png"}), v)
     else:                  return vprint(json.dumps({"text":WID_PID_DICT[w][p], "icon_path":PATH_TO_IMG_DIR + "inactive.png"}), v)
 
-def main(general:bool, mode:str, wid:Optional[str], pid:Optional[str], tag:Optional[str]) -> NoReturn:
+def main(general:bool, mode:str, wid:Optional[str], pid:Optional[str], tag:Optional[str]) -> None:
     # status is used to change BTT widget icons/text, so we print to stdout
     if mode == 'status':
         if general:         print_out(write_cache(get_current()), general, wid, pid)
