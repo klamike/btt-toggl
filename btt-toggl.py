@@ -140,7 +140,7 @@ if __name__ == '__main__':
                         f"Project ID {args.pid} not found. Make sure WID_PID_DICT is correct in config.py\n")
 
         ## validate cache path
-        try: pathlib.Path(PATH_TO_CACHE_FILE).touch() # make sure we can write to cache file
+        try: f = open(PATH_TO_CACHE_FILE, 'w'); f.close() # make sure we can write to cache file
         except (PermissionError, FileNotFoundError) as e: print(f"Is your cache file writeable?\n", file=sys.stderr); exit(1)
 
         ## validate image paths
