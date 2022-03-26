@@ -168,5 +168,5 @@ if __name__ == '__main__':
     except Exception as e:
         from traceback import format_exc
         print(f"Encountered uncaught exception:\n\n {format_exc()}\n Please report to https://github.com/klamike/btt-toggl/issues\n", file=sys.stderr)
-    finally: # we exit(0) after main if successful, so this block only runs an exception
+    finally: # we exit(0) after main if successful, so this block only runs after an exception
         exit(1)
