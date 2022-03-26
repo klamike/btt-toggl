@@ -12,3 +12,8 @@ PATH_TO_CACHE_FILE = '/path/to/cache/status.json'
 
 # by default, btt-toggl will apply the tag "btt-toggl" to all entries it creates
 TAG_ALL_ENTRIES = True
+
+# by default, btt-toggl validates that command line arguments, paths, etc. are valid.
+# once you have everything working, set this to False to speed up the script slightly.
+# if you run into any problems, try setting this to True before you report an issue.
+VALIDATION = True

@@ -2,8 +2,8 @@
 import sys, pathlib, argparse, subprocess, json
 from typing import Optional as O, Union as U
 
-from misc import vprint, get_data
-from config import API_TOKEN, PATH_TO_IMG_DIR, PATH_TO_CACHE_FILE, WID_PID_DICT, TAG_ALL_ENTRIES
+from misc import vprint, get_data, assertf
+from config import API_TOKEN, PATH_TO_IMG_DIR, PATH_TO_CACHE_FILE, WID_PID_DICT, TAG_ALL_ENTRIES, VALIDATION
 
 ## Usage:
 # btt-toggl.py status                             # prints general BTT style string (active if logging any project)
@@ -122,29 +122,31 @@ if __name__ == '__main__':
     args = parser.parse_args()
     general = args.wid is None or args.pid is None
 
-    ## validate args
-    if args.tag is not None:
-        assert args.mode in ['add_tag', 'start', 'toggle'], f"Tag cannot be set in {args.mode} mode\n" # stop or status
-    if args.mode == 'start':
-        assert args.wid is not None and args.pid is not None, f"Workspace ID and Project ID must be set in {args.mode} mode\n" # start
-    if general:
-        assert args.mode in ['status', 'stop', 'add_tag'], f"Workspace ID and Project ID must be set in {args.mode} mode\n" # start, toggle
-    else:
-        assert int(args.wid) in WID_PID_DICT.keys(), f"Workspace ID {args.wid} not found. Make sure WID_PID_DICT is correct in config.py\n"
-        assert int(args.pid) in WID_PID_DICT[int(args.wid)].keys(), f"Project ID {args.pid} not found. Make sure WID_PID_DICT is correct in config.py\n"
+    if VALIDATION:
+        ## validate args
+        if args.tag is not None:
+            assertf(args.mode in ['add_tag', 'start', 'toggle'], # stop or status
+                        f"Tag cannot be set in {args.mode} mode\n")
+        if args.mode == 'start':
+            assertf(args.wid is not None and args.pid is not None,
+                        f"Workspace ID and Project ID must be set in {args.mode} mode\n")
+        if general:
+            assertf(args.mode in ['status', 'stop', 'add_tag'],
+                        f"Workspace ID and Project ID must be set in {args.mode} mode\n")
+        else:
+            assertf(int(args.wid) in WID_PID_DICT.keys(),
+                        f"Workspace ID {args.wid} not found. Make sure WID_PID_DICT is correct in config.py\n")
+            assertf(int(args.pid) in WID_PID_DICT[int(args.wid)].keys(),
+                        f"Project ID {args.pid} not found. Make sure WID_PID_DICT is correct in config.py\n")
 
-    ## validate paths
-    try:
-        pathlib.Path(PATH_TO_CACHE_FILE).parent.mkdir(parents=True, exist_ok=True) # make sure folder for cache file exists
-        pathlib.Path(PATH_TO_CACHE_FILE).touch()                                   # make sure we can write to cache file
-        assert pathlib.Path(PATH_TO_IMG_DIR + '/active.png').is_file()             # make sure active.png exists
-        assert pathlib.Path(PATH_TO_IMG_DIR + '/inactive.png').is_file()           # make sure inactive.png exists
-    except PermissionError as e:
-        print(f"Is your cache file in a writeable directory?\n", file=sys.stderr)
-        exit(1)
-    except AssertionError as e:
-        print(f"Your image files seem to be missing.\n", file=sys.stderr)
-        exit(1)
+        ## validate cache path
+        try: pathlib.Path(PATH_TO_CACHE_FILE).touch() # make sure we can write to cache file
+        except (PermissionError, FileNotFoundError) as e: print(f"Is your cache file writeable?\n", file=sys.stderr); exit(1)
+
+        ## validate image paths
+        assertf(pathlib.Path(PATH_TO_IMG_DIR + '/active.png').is_file() \
+            and pathlib.Path(PATH_TO_IMG_DIR + '/inactive.png').is_file(),
+                        f"Your image files seem to be missing.\n")
 
     ## run script
     try:
@@ -161,6 +163,8 @@ if __name__ == '__main__':
         print(f"\nDid you change your API key? Make sure it's correct in config.py\n", file=sys.stderr)
         from traceback import print_exc; print_exc()
         print(f"\nDid you change your API key? Make sure it's correct in config.py\n", file=sys.stderr)
+    except (PermissionError, FileNotFoundError) as e:
+        print(f"Is your cache file in writeable?\n", file=sys.stderr)
     except Exception as e:
         from traceback import format_exc
         print(f"Encountered uncaught exception:\n\n {format_exc()}\n Please report to https://github.com/klamike/btt-toggl/issues\n", file=sys.stderr)
