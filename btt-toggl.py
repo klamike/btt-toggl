@@ -158,7 +158,6 @@ if __name__ == '__main__':
             w, p = (int(args.wid), int(args.pid)) if not general else (None, None)
             if general: print(json.dumps({"text":" ",                "icon_path":PATH_TO_IMG_DIR + "inactive.png"}))
             else:       print(json.dumps({"text":WID_PID_DICT[w][p], "icon_path":PATH_TO_IMG_DIR + "inactive.png"}))
-
     except json.JSONDecodeError as e: # for other exceptions, we shouldn't be silent
         print(f"\nDid you change your API key? Make sure it's correct in config.py\n", file=sys.stderr)
         from traceback import print_exc; print_exc()

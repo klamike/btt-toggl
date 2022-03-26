@@ -1,5 +1,5 @@
 import sys, subprocess, json
-from typing import Optional as O, Union as U, NoReturn
+from typing import Optional as O
 # some helper functions for btt-toggl.py
 
 def vprint(string: str, v:bool=True):
