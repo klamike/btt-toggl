@@ -18,7 +18,7 @@ WID_PID_DICT = {1000000:{100000001:'W1 P1',
 # by default, btt-toggl will apply the tag "btt-toggl" to all entries it creates
 TAG_ALL_ENTRIES = True
 
-# by default, btt-toggl validates that command line arguments, paths, etc. are valid.
+# by default, btt-toggl validates that command line arguments, paths, etc.
 # once you have everything working, set this to False to speed up the script slightly.
 # if you run into any problems, try setting this to True before you report an issue.
 VALIDATION = True
