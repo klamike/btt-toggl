@@ -1,6 +1,8 @@
 # btt-toggl
 Control [Toggl](https://track.toggl.com) timers across different workspaces and projects via [BetterTouchTool](https://folivora.ai/) touchbar widgets. Uses Toggl API v8 via cURL. Includes tag support and caching to cut down on network requests!
 
+![multi](readme_img/multi.png)
+
 ## BetterTouchTool setup
 
 `btt-toggl` provides several useful commands to integrate with BetterTouchTool. The `status` mode returns a style string for automatically changing button icons/text, so it should be run every few seconds. The `toggle` and `add_tag` modes should be run on button click, to execute their respective actions.
