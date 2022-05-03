@@ -22,7 +22,7 @@ GET, POST, PUT = "-X GET ", "-X POST ", "-X PUT "
 TIME_ENTRIES   = "https://api.track.toggl.com/api/v8/time_entries"
 CURRENT, START, STOP = "/current", "/start", "/stop"
 
-def write_cache(current:O[dict]=None) -> O[dict]:
+def write_cache(current: O[dict]=None) -> U[dict, None]:
     ## gather all style strings and write them to a JSON file
     if current is None: current = get_current()
     d = dict()
@@ -35,16 +35,16 @@ def write_cache(current:O[dict]=None) -> O[dict]:
         json.dump(d, f)
     return current
 
-def read_cache(wid:str, pid:str) -> str:
+def read_cache(wid: str, pid: str) -> str:
     ## read respective style string from cache
     with open(PATH_TO_CACHE_FILE, 'r') as f:
         return json.load(f)[wid][pid]
 
-def get_current() -> O[dict]:
+def get_current() -> U[dict, None]:
     ## return data for the current entry or None if not currently logging
     return get_data(CURL + AUTH + GET + TIME_ENTRIES + CURRENT)
 
-def start(wid:O[U[str,int]], pid:O[U[str,int]], tag:O[str]=None) -> O[dict]:
+def start(wid: U[str,int], pid: U[str,int], tag: O[str]=None) -> U[dict, None]:
     ## start a new entry
     d = json.dumps({"time_entry":
                          {"tags": ([tag, "btt-toggl"] if tag else ["btt-toggl"]) \
@@ -55,13 +55,13 @@ def start(wid:O[U[str,int]], pid:O[U[str,int]], tag:O[str]=None) -> O[dict]:
                   "created_with": "curl"}})
     return get_data(CURL + AUTH + HEADER + DATA.format(d) + POST + TIME_ENTRIES + START)
 
-def stop(current:O[dict]=None) -> O[dict]:
+def stop(current: O[dict]=None) -> U[dict, None]:
     ## stop the current entry
     if current is None: current = get_current()
     if current is None: return None
     return get_data(CURL + AUTH + HEADER + DATA.format("") + PUT + TIME_ENTRIES + f"/{current['id']}" + STOP)
 
-def toggle(wid:str, pid:str, tag:O[str]=None) -> O[dict]:
+def toggle(wid: U[str,int], pid: U[str,int], tag: O[str]=None) -> U[dict, None]:
     ## stop the current entry if needed
     current = get_current()
     if current is not None:
@@ -72,7 +72,7 @@ def toggle(wid:str, pid:str, tag:O[str]=None) -> O[dict]:
     out = start(wid, pid, tag)
     return write_cache(out)
 
-def add_tag(new_tag:str, current:O[dict]=None) -> O[dict]:
+def add_tag(new_tag: str, current: O[dict]=None) -> U[dict, None]:
     ## add a tag to the current entry
     if current is None: current = get_current()
     if current is None: return None # no entry to add a tag to
@@ -82,11 +82,11 @@ def add_tag(new_tag:str, current:O[dict]=None) -> O[dict]:
                            "pid": str(current['pid'])}})
     return get_data(CURL + AUTH + HEADER + DATA.format(d) + PUT + TIME_ENTRIES + f"/{current['id']}")
 
-def is_wid_pid_match(data:O[dict], wid:O[U[str,int]], pid:O[U[str,int]]) -> bool:
+def is_wid_pid_match(data: O[dict]=None, wid: O[U[str,int]]=None, pid: O[U[str,int]]=None) -> bool:
     ## True if wid and pid match, False otherwise
     return (data) and ('pid' in data) and ('wid' in data) and (str(data['pid']) == str(pid)) and (str(data['wid']) == str(wid))
 
-def print_out(data:O[dict], general:bool=False, wid:O[U[str,int]]=None, pid:O[U[str,int]]=None, v:bool=True) -> O[str]:
+def print_out(data: O[dict]=None, general: bool=False, wid: O[U[str,int]]=None, pid: O[U[str,int]]=None, v: bool=True) -> U[str, None]:
     ## determine if we are active
     if general:                            active = bool(data)
     elif (not data) or ('stop' in data):   active = False
@@ -100,7 +100,7 @@ def print_out(data:O[dict], general:bool=False, wid:O[U[str,int]]=None, pid:O[U[
     elif active:           return vprint(json.dumps({"text":WID_PID_DICT[w][p], "icon_path":PATH_TO_IMG_DIR +   "active.png"}), v)
     else:                  return vprint(json.dumps({"text":WID_PID_DICT[w][p], "icon_path":PATH_TO_IMG_DIR + "inactive.png"}), v)
 
-def main(general:bool, mode:str, wid:O[str], pid:O[str], tag:O[str]) -> None:
+def main(general: bool, mode: str, wid: O[str]=None, pid: O[str]=None, tag: O[str]=None) -> None:
     # status is used to change BTT widget icons/text, so we print to stdout
     if mode == 'status':
         if general:         print_out(write_cache(get_current()), general, wid, pid)
