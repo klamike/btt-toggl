@@ -1,5 +1,5 @@
 # Your API token from Toggl (Profile settings -> API Token)
-TOKEN = '0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a'
+API_TOKEN = '0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a'
 
 # Path to image dir. Should have files active.png and inactive.png
 PATH_TO_IMG_DIR = '/path/to/images/'
