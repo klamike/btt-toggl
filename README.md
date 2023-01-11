@@ -74,6 +74,3 @@ For other exceptions, `btt-toggl` will exit with error. You can run the script m
 [Toggl API](https://github.com/toggl/toggl_api_docs/blob/master/toggl_api.md), [BTT Docs](https://docs.folivora.ai/), [BTT Forum](https://community.folivora.ai/), [PyPy](https://www.pypy.org/features.html)
 
 ## To-Do:
-
-- Add tag support for `toggle` and `status`
-- Remove a tag from the current entry
