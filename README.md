@@ -24,33 +24,38 @@ In my configuration, I have a general status icon with an Open Button Group acti
 
 ### Status icons
 
+The below examples use a workspace id of 1000001 and a project id of 100000001.
+
 Create a Shell Script/Task widget and set:
 
-    Launch Path: /bin/bash
-    Parameters: -c
-    Script: /usr/local/bin/pypy3 /path/to/folder/btt-toggl.py status
+    Launch Path: /usr/local/bin/pypy3
+    Parameters:
+    Environment Variables: BTTT_MODE=status
+    Script: /path/to/folder/btt-toggl.py
 
 ![off](readme_img/off.png)
 
-For project-specific status, use: `btt-toggl.py status -w <workspace_id> -p <project_id>`
+For project-specific status, specify the workspace and project if in the environment variables: `BTTT_WID=1000001;BTTT_PID=100000001;BTTT_MODE=status`
 
 ### Toggle projects
 
-Create a widget and assign it the Execute Shell Script/Task action. Then, set the options to:
+Create a widget and assign it the Execute Terminal Command (Async, non-blocking) action. Then, set the options to:
 
-    Launch Path: /bin/bash
-    Parameters: -c
-    Script: /usr/local/bin/pypy3 /path/to/folder/btt-toggl.py toggle -w <workspace_id> -p <project_id>
+    Launch Path: /usr/local/bin/pypy3
+    Parameters:
+    Environment Variables: BTTT_WID=1000001;BTTT_PID=100000001;BTTT_MODE=toggle
+    Script: /path/to/folder/btt-toggl.py
 
 ![multi](readme_img/multi.png)
 
 ### Add tags
 
-Create a widget and assign it the Execute Shell Script/Task action. Then, set the options to:
+Create a widget and assign it the Execute Terminal Command (Async, non-blocking) action. Then, set the options to:
 
-    Launch Path: /bin/bash
-    Parameters: -c
-    Script: /usr/local/bin/pypy3 /path/to/folder/btt-toggl.py add_tag -t <tag>
+    Launch Path: /usr/local/bin/pypy3
+    Parameters:
+    Environment Variables: BTTT_WID=1000001;BTTT_PID=100000001;BTTT_MODE=add_tag
+    Script: /path/to/folder/btt-toggl.py
 
 ## CLI options
 
@@ -61,6 +66,8 @@ Create a widget and assign it the Execute Shell Script/Task action. Then, set th
     btt-toggl.py start -w <wid> -p <pid> -t <tag>   # starts new entry (tag optional)
     btt-toggl.py stop                               # stops current entry
     btt-toggl.py -h                                 # shows help message
+
+When the environment variable `BTTT_MODE` is defined, CLI options are ignored. Instead, the mode, workspace id, project id, and tag are read from `BTTT_MODE`, `BTTT_WID`, `BTTT_PID`, and `BTTT_TAG` respectvely.
 
 ## Failure modes
 
@@ -74,3 +81,7 @@ For other exceptions, `btt-toggl` will exit with error. You can run the script m
 [Toggl API](https://github.com/toggl/toggl_api_docs/blob/master/toggl_api.md), [BTT Docs](https://docs.folivora.ai/), [BTT Forum](https://community.folivora.ai/), [PyPy](https://www.pypy.org/features.html)
 
 ## To-Do:
+
+- Migrate to [Toggl API v9](https://developers.track.toggl.com/docs/).
+- Make this a daemon that can be queried by BTT to better control API calls.
+- Write tests.
