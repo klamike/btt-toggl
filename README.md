@@ -5,7 +5,7 @@ Control [Toggl](https://track.toggl.com) timers across different workspaces and 
 
 ## Installation
 
-`btt-toggl` depends on Python ≥3.8 (and the `requests` library if you want to use the `requests` backend). If you already have a Python installation, you can use that. To get some more speed you can also use [pypy3](https://www.pypy.org/features.html), which you can install with [Homebrew](https://brew.sh/) using `brew install pypy3`. Then:
+`btt-toggl` depends on Python ≥3.8 (and the `requests`/`urllib3` libraries if you want to use those backends). If you already have a Python installation, you can use that. To get some more speed you can also use [pypy3](https://www.pypy.org/features.html), which you can install with [Homebrew](https://brew.sh/) using `brew install pypy3`. Then:
 
 1. Clone `btt-toggl` to your local machine by running `git clone https://github.com/klamike/btt-toggl`
 2. Edit `config_example.py` file:
