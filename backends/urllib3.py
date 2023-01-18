@@ -15,8 +15,8 @@ from config import API_TOKEN, TIMEOUT
 token = b64encode(f"{API_TOKEN}:api_token".encode("utf-8")).decode("utf-8")
 headers = {"Authorization": f"Basic {token}", "Content-Type": "application/json"}
 
-NoInternetException = (urllib3.exceptions.NewConnectionError, urllib3.exceptions.MaxRetryError)
-if "--debug" not in sys.argv and "--info" not in sys.argv: getLogger("urllib3").setLevel("ERROR")
+NoInternetExceptions = (urllib3.exceptions.NewConnectionError, urllib3.exceptions.MaxRetryError)
+if "--debug" not in sys.argv and "--info" not in sys.argv: urllib3.disable_warnings()
 
 http = urllib3.poolmanager.PoolManager()
 

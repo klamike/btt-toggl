@@ -12,7 +12,7 @@ from config import API_TOKEN, TIMEOUT
 
 session = requests.Session()
 
-NoInternetException = (requests.exceptions.ConnectionError, requests.exceptions.Timeout)
+NoInternetExceptions = (requests.exceptions.ConnectionError, requests.exceptions.Timeout)
 
 def get(url: str) -> State:
     """ Send a GET request, including authentication, then return the result as json."""

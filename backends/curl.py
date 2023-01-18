@@ -14,7 +14,7 @@ PREFIX = CURL + AUTH + HEADER
 DATA   = " -d '{}' "
 GET, POST, PUT, PATCH = "-X GET ", "-X POST ", "-X PUT ", "-X PATCH "
 
-NoInternetException = (CalledProcessError,)
+NoInternetExceptions = (CalledProcessError,)
 
 def get(url: str) -> State:
     """ Send a GET request, including authentication, then return the result as json."""
