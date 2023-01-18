@@ -38,6 +38,8 @@ Control [Toggl](https://track.toggl.com) timers across different workspaces and 
         --no-validation                             # skips validation of command line arguments, paths, etc.
         --curl                                      # uses curl backend
         --requests                                  # uses requests backend (default if available)
+        --urllib                                    # uses urllib backend
+        --urllib3                                   # uses urllib3 backend
 
 ## BetterTouchTool setup
 
