@@ -1,5 +1,6 @@
 import os, sys, json
 
+from datetime import datetime, timezone
 from pathlib import Path
 from argparse import ArgumentParser
 from functools import partial
@@ -21,6 +22,7 @@ USAGE = """
     btt-toggl.py stop                               # stops current entry
 
     btt-toggl.py status -w <wid> -p <pid>           # prints BTT style string for <wid> <pid> (active only if logging <wid> <pid>)
+    btt-toggl.py status -t <tag>                    # prints BTT style string for <tag> (active only if current entry tags contains <tag>)
     btt-toggl.py toggle -w <wid> -p <pid> -t <tag>  # if <wid> <pid> is currently running, stop entry. otherwise, stop current and start new entry (tag optional)
     btt-toggl.py start -w <wid> -p <pid> -t <tag>   # starts new entry (tag optional)
 
@@ -32,14 +34,15 @@ USAGE = """
     btt-toggl.py -h                                 # shows help message
 """
 
-TIME_ENTRY = "https://api.track.toggl.com/api/v8/time_entries/{}"
-CURRENT = "https://api.track.toggl.com/api/v8/time_entries/current"
-START = "https://api.track.toggl.com/api/v8/time_entries/start"
-STOP = "https://api.track.toggl.com/api/v8/time_entries/{}/stop"
+TIME_ENTRY = "https://api.track.toggl.com/api/v9/workspaces/{}/time_entries/{}"
+CURRENT = "https://api.track.toggl.com/api/v9/me/time_entries/current"
+START = "https://api.track.toggl.com/api/v9/workspaces/{}/time_entries"
+STOP = "https://api.track.toggl.com/api/v9/workspaces/{}/time_entries/{}/stop"
 PROJECTS = "https://api.track.toggl.com/api/v9/me/projects"
 
 JSON_TYPES = Union[dict, list, str, bool, type(None)]
 WID_PID_TYPE = dict[str, dict[str, str]]
+CACHE_TYPE = dict[str, Union[dict[str, str], list[str]]]
 JSON_DICT = dict[str, JSON_TYPES]
 State = Optional[JSON_DICT]
 
@@ -66,178 +69,206 @@ session = requests.Session()
 debug("Imports/Setup done")
 
 
-def get(url: str, get_data: bool=True) -> State:
+def get(url: str) -> State:
     """ Send a GET request, including authentication, then return the result as json."""
     resp: JSON_DICT = session.get(url, auth=(API_TOKEN, "api_token"), timeout=TIMEOUT).json(parse_int=str)
-    return resp.get("data") if get_data else resp
+    return resp
 
-
-def post(url: str, json: JSON_DICT, get_data: bool=True) -> State:
+def post(url: str, json: JSON_DICT) -> State:
     """ Send a POST request with json data, including authentication, then return the result as json."""
     resp: JSON_DICT = session.post(url, auth=(API_TOKEN, "api_token"), timeout=TIMEOUT, json=json).json(parse_int=str)
-    return resp.get("data") if get_data else resp
+    return resp
 
-
-def put(url: str, get_data: bool=True) -> State:
+def put(url: str, json: Optional[JSON_DICT]=None) -> State:
     """ Send a PUT request, including authentication, then return the result as json."""
-    resp: JSON_DICT = session.put(url, auth=(API_TOKEN, "api_token"), timeout=TIMEOUT).json(parse_int=str)
-    return resp.get("data") if get_data else resp
+    resp: JSON_DICT = session.put(url, auth=(API_TOKEN, "api_token"), timeout=TIMEOUT, json=json).json(parse_int=str)
+    return resp
+
+def patch(url: str, json: Optional[JSON_DICT]=None) -> State:
+    """ Send a PATCH request with json data, including authentication, then return the result as json."""
+    resp: JSON_DICT = session.patch(url, auth=(API_TOKEN, "api_token"), timeout=TIMEOUT, json=json).json(parse_int=str)
+    return resp
 
 
-def write_cache(current: State=None):
+def write_cache(state: State=None):
     """Write the current state of each project to the cache file."""
     debug("Making cache")
-    current = get_current(current)
-    d: WID_PID_TYPE = dict()
+    state = get_current(state)
+    d: CACHE_TYPE = dict()
     for wid, pids in WID_PID_DICT.items():
         d[wid] = {}
         for pid in pids.keys():
-            d[wid][pid] = make_status(current, False, wid, pid, v=False)
+            d[wid][pid] = make_status(state, False, wid, pid, v=False)
+
+    if state is not None:
+        debug("Adding active tags to cache")
+        d["tags"] = state.get("tags", list())
+        debug(f"Tags: {d['tags']}")
 
     debug(f"Writing to cache")
     with open(PATH_TO_CACHE_FILE, "w") as f: json.dump(d, f)
     debug(f"Done writing to cache")
 
-    return current
+    return state
 
 
 def read_cache(wid: str, pid: str):
     """Read the current style string of a project from the cache file."""
-    debug(f"Reading from cache ({wid}, {pid})")
+    debug(f"Reading from cache ({wid}, {pid}, {tag})")
     with open(PATH_TO_CACHE_FILE, "r") as f:
-        out_dict: WID_PID_TYPE = json.load(f)
+        out_dict: CACHE_TYPE = json.load(f)
         return out_dict[wid][pid]
 
 
-def get_current(current: Optional[State]=None, force: bool=False) -> State:
-    """If `current` is None, retrieve the current time entry from Toggl."""
-    if current is None or force:
+def read_cache_tag(tag: str):
+    """Checking if a tag is in the cache file."""
+    debug(f"Looking for {tag} in cache")
+    with open(PATH_TO_CACHE_FILE, "r") as f:
+        out_dict: CACHE_TYPE = json.load(f)
+        match = tag in out_dict["tags"]
+        debug(f"Found {tag} in cache" if match else f"No {tag} in cache")
+        return match
+
+
+def get_current(state: Optional[State]=None, force: bool=False) -> State:
+    """If `state` is None, retrieve the current time entry from Toggl."""
+    if state is None or force:
         debug("Getting current from Toggl")
-        current = get(CURRENT)
+        state = get(CURRENT)
     else:
         debug("Using cached current")
 
-    return current
+    return state
 
 
-def start(wid: str, pid: str, tag: Optional[str]=None):
+def start(wid: str, pid: str, tag: Optional[str]=None, cache: bool=False):
     """Start a new entry."""
     debug(f"Starting new entry ({wid}, {pid}, {tag})")
     tags: list[str] = []
     if tag:               tags.append(tag)
-    elif TAG_ALL_ENTRIES: tags.append("btt-toggl")
+    if TAG_ALL_ENTRIES: tags.append("btt-toggl")
 
-    json_dict =  {"time_entry": {"tags": tags, "wid": wid, "pid": pid, "created_with": "curl"}}
+    now = datetime.now(tz=timezone.utc)
+    json_dict =  {"tags": tags, "start": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "duration":-1 * int(now.timestamp()),
+                  "workspace_id": int(wid), "project_id": int(pid), "created_with": "btt-toggl"}
 
-    return post(START, json_dict)
+    state = post(START.format(wid), json_dict)
+
+    return write_cache(state) if cache else state
 
 
-def stop(current: Optional[dict] = None):
+def stop(state: Optional[dict] = None, cache: bool=False):
     """Stop the current entry, if it exists."""
     debug("Stopping current entry")
-    current = get_current(current)
-    if current is None: return None
+    state = get_current(state)
+    if state is None: return None
 
-    return put(STOP.format(current['id']))
+    state = patch(STOP.format(state['workspace_id'], state['id']))
+
+    return write_cache(state) if cache else state
 
 
-def toggle(wid: str, pid: str, tag: Optional[str]=None):
+def toggle(wid: str, pid: str, tag: Optional[str]=None, cache: bool=True):
     """Convenience function to toggle the current entry"""
     debug(f"Toggling ({wid}, {pid}, {tag})")
-    current = get_current()
-    if current is not None:
-        stopped = stop(current)
+    state = get_current()
+    if state is not None:
+        stopped = stop(state, cache=False)
 
-        if wid_pid_match(stopped, wid, pid):
+        if wid_pid_tag_match(stopped, wid, pid, tag):
             return write_cache(stopped)
 
     # if there is no current trial, or if the current trial does not match wid/pid, start a new one.
-    out = start(wid, pid, tag)
-    return write_cache(out)
+    out = start(wid, pid, tag, cache=False)
+
+    return write_cache(out) if cache else out
 
 
-def add_tag(new_tag: str, current: Optional[dict]=None):
+def add_tag(new_tag: str, state: Optional[dict]=None, cache: bool=True):
     """Add a tag to the current entry"""
     debug(f"Adding tag {new_tag} to current entry")
-    current = get_current(current)
-    if current is None: return None
+    state = get_current(state)
+    if state is None: return None
 
-    tags: list[str] = current.get("tags", list())
+    tags: list[str] = state.get("tags", list())
     tags.append(new_tag)
 
-    json_dict = dict(time_entry=dict())
-    json_dict["time_entry"]["tags"] = tags
-    if "wid" in current: json_dict["time_entry"]["wid"] = current["wid"]
-    if "pid" in current: json_dict["time_entry"]["pid"] = current["pid"]
+    json_dict = dict(tags=tags)
 
-    return put(TIME_ENTRY.format(current['id']), json_dict)
+    state = put(TIME_ENTRY.format(state['wid'], state['id']), json_dict)
+
+    return write_cache(state) if cache else state
 
 
-def remove_tag(old_tag: str, current: Optional[dict]=None):
+def remove_tag(old_tag: str, state: Optional[dict]=None, cache: bool=True):
     """Remove a tag from the current entry"""
     debug(f"Removing tag {old_tag} from current entry")
-    current = get_current(current)
-    if current is None: return None
+    state = get_current(state)
+    if state is None: return None
 
-    tags: list[str] = current.get("tags", list())
+    tags: list[str] = state.get("tags", list())
     if old_tag in tags:
         tags = [t for t in tags if t != old_tag]
 
-    json_dict = dict(time_entry=dict())
-    json_dict["time_entry"]["tags"] = tags
-    if "wid" in current:
-        json_dict["time_entry"]["wid"] = current["wid"]
-    if "pid" in current:
-        json_dict["time_entry"]["pid"] = current["pid"]
+    json_dict = dict(tags=tags)
 
-    return put(TIME_ENTRY.format(current['id']), json_dict)
+    state = put(TIME_ENTRY.format(state['wid'], state['id']), json_dict)
+
+    return write_cache(state) if cache else state
 
 
-def toggle_tag(tag: str, current: Optional[dict]=None):
+def toggle_tag(tag: str, state: Optional[dict]=None, cache: bool=True):
     """Convenience function to toggle a tag"""
     debug(f"Toggling tag {tag} on current entry")
 
-    current = get_current(current)
-    if current is None: return None
+    state = get_current(state)
+    if state is None: return None
 
-    tags: list[str] = current.get("tags", [])
+    tags: list[str] = state.get("tags", list())
     if tag in tags:
-        return remove_tag(tag, current)
+        state = remove_tag(tag, state, cache=False)
     else:
-        return add_tag(tag, current)
+        state = add_tag(tag, state, cache=False)
+
+    return write_cache(state) if cache else state
 
 
-def wid_pid_match(data: Optional[dict]=None, wid: Optional[str]=None, pid: Optional[str]=None) -> bool:
-    """Returns True if wid and pid match the current entry."""
+def wid_pid_tag_match(data: Optional[dict]=None, wid: Optional[str]=None, pid: Optional[str]=None, tag: Optional[str]=None) -> bool:
+    """Returns True if wid and pid and tag (if supplied) match the current entry."""
     if data is None: return
     debug(f"Checking if wid/pid match (passed {wid}, {pid}) vs data {data.get('wid')}, {data.get('pid')}")
 
-    pid_match = (not pid) or ("pid" in data and data["pid"] == pid)
-    wid_match = (not wid) or ("wid" in data and data["wid"] == wid)
+    pid_match = (not pid) or ("project_id" in data and data["project_id"] == pid)
+    wid_match = (not wid) or ("workspace_id" in data and data["workspace_id"] == wid)
+    tag_match = (not tag) or ("tags" in data and tag in data["tags"])
 
-    match = wid_match and pid_match
-    debug("Matched" if match else "No match")
+    match = wid_match and pid_match and tag_match
+    debug("Matched" if match else f"No match ({wid_match=}, {pid_match=}, {tag_match=})")
+
     return match
 
 
-def make_status(data: Optional[dict] = None, general: bool = False, wid: Optional[str] = None, pid: Optional[str] = None, v: bool = True):
+def make_status(data: Optional[dict]=None, general: bool=False, wid: Optional[str]=None, pid: Optional[str]=None, tag: Optional[str]=None, v: bool = True):
     """Print status as in `data`, in the BTT format."""
-    debug(f"Making status for ({data=}, {general=}, {wid=}, {pid=}, {v=})")
-    if general or wid_pid_match(data, wid, pid):
+    debug(f"Making status for ({data=}, {general=}, {wid=}, {pid=}, {tag=})")
+    if general and tag is None:
         active = bool(data)
+    elif wid_pid_tag_match(data, wid, pid, tag):
+        active = True
     else:
         active = False
 
-    debug(f"Making {'active' if active else 'insactive'} style string {('for ' + str((wid, pid))) if not general else ''}")
+    debug(f"Making {'active' if active else 'inactive'} style string {('for ' + str((wid, pid))) if not general else ''}")
 
-    if general and active:
-        status_string = json.dumps({"text": " ", "icon_path": PATH_TO_ACTIVE_IMG})
-    elif general:
-        status_string = json.dumps({"text": " ", "icon_path": PATH_TO_INACTIVE_IMG})
-    elif active:
-        status_string = json.dumps({"text": WID_PID_DICT[wid][pid], "icon_path": PATH_TO_ACTIVE_IMG})
+    icon_path = PATH_TO_ACTIVE_IMG if active else PATH_TO_INACTIVE_IMG
+    if not general:
+        text = WID_PID_DICT[wid][pid]
+        if tag: text += f": {tag}"
     else:
-        status_string = json.dumps({"text": WID_PID_DICT[wid][pid], "icon_path": PATH_TO_INACTIVE_IMG})
+        text = tag or " "
+
+    status_string = json.dumps({"text": text, "icon_path": icon_path})
+    debug(f"Status string: {status_string}")
 
     return status_string
 
@@ -245,12 +276,26 @@ def make_status(data: Optional[dict] = None, general: bool = False, wid: Optiona
 def main(general: bool, mode: str, wid: Optional[str]=None, pid: Optional[str]=None, tag: Optional[str]=None) -> None:
     # status is used to change BTT widget icons/text, so we print to stdout
     if mode == "status":
-        if general:
-            # rewrite cache on general status
-            send_to_btt(make_status(write_cache(), general, wid, pid))
+        if general and tag is None:
+            debug("Getting general status with no tag")
+            # rewrite cache on general/tag-only status
+            send_to_btt(make_status(write_cache(), general, wid, pid, tag))
         else:
+            debug("Getting non-general status")
             # read from cache for non-general status
-            send_to_btt(read_cache(wid, pid))
+            if tag is None:
+                debug("Getting non-general status with no tag")
+                send_to_btt(read_cache(wid, pid))
+            elif general:
+                debug("Getting non-general status with tag")
+                icon_path = PATH_TO_ACTIVE_IMG if read_cache_tag(tag) else PATH_TO_INACTIVE_IMG
+                send_to_btt(json.dumps({"text": tag, "icon_path": icon_path}))
+            else:
+                debug("Getting non-general status with tag and wid/pid")
+                cached = json.loads(read_cache(wid, pid))
+                cached['text'] += f": {tag}"
+                cached['icon_path'] = PATH_TO_ACTIVE_IMG if read_cache_tag(tag) else PATH_TO_INACTIVE_IMG
+                send_to_btt(json.dumps(cached))
 
     # commands
     elif mode == "toggle": toggle(wid, pid, tag)
@@ -263,7 +308,7 @@ def main(general: bool, mode: str, wid: Optional[str]=None, pid: Optional[str]=N
 def get_project_dict() -> WID_PID_TYPE:
     """ Query Toggl for all workspaces and projects """
     debug("Getting WID_PID_DICT from Toggl")
-    projects = get(PROJECTS, False)
+    projects = get(PROJECTS)
     d: WID_PID_TYPE = dict()
     for project in projects:
         if project["wid"] not in d:
@@ -274,7 +319,7 @@ def get_project_dict() -> WID_PID_TYPE:
 
     debug("Printing WID_PID_DICT definition code")
     print(f"{'~'*os.get_terminal_size().columns}\n\n{prefix} {d_str}\n\n{'~'*os.get_terminal_size().columns}", flush=True)
-    info("Copy the above into your config file, replacing the placeholder WID_PID_DICT definition on line 16.")
+    info("Copy the above code into your config file, replacing the placeholder WID_PID_DICT definition on line 16. Feel free to change the descriptions associated with each project.")
     return d
 
 
@@ -315,7 +360,7 @@ if __name__ == "__main__":
         ## validate args
         if tag is not None:
             assert_false(
-                mode in ["add_tag", "start", "toggle", "remove_tag", "toggle_tag"],
+                mode in ["status", "add_tag", "start", "toggle", "remove_tag", "toggle_tag"],
                 f"Tag must not be set in {mode} mode\n",
             )
         if mode == "start":
