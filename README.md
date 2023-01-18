@@ -11,9 +11,9 @@ Control [Toggl](https://track.toggl.com) timers across different workspaces and 
 2. Edit `config_example.py` file:
     - Get your Toggl Token from the the bottom of the [Profile Settings page](https://track.toggl.com/profile)
     - Edit the paths/images to match your setup, if needed.
-    - Edit the dictionary to include your mapping of workspace and project IDs. You can find these by clicking on a project from [https://track.toggl.com/projects](https://track.toggl.com/projects) and inspecting the URL. It will have the following form: `https://track.toggl.com/<workspace_id>/projects/<project_id>/team`.
+    - Edit the dictionary to include your mapping of workspace and project IDs. You can find these by clicking on a project from [https://track.toggl.com/projects](https://track.toggl.com/projects) and inspecting the URL. It will have the following form: `https://track.toggl.com/<workspace_id>/projects/<project_id>/team`. Alternatively, run `python btt-toggl.py get_project_dict` to fetch this information from the Toggl API.
     - Rename the file from `config_example.py` to `config.py`
-3. Done! You can quickly run `pypy3 btt-toggl.py status` to make sure everything works. You should see a JSON string with a path to your active/inactive image.
+3. Done! You can quickly run `python btt-toggl.py status` to make sure everything works. You should see a JSON string with a path to your active/inactive image.
 
 ## CLI options
 
