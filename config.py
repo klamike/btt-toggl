@@ -25,3 +25,6 @@ TAG_ALL_ENTRIES = True
 # once you have everything working, set this to False to speed up the script slightly (~5%).
 # if you run into any problems, try setting this to True before you report an issue.
 VALIDATION = True
+
+# how many seconds to wait for a response from the Toggl API
+TIMEOUT = 5
