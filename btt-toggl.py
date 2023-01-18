@@ -59,22 +59,22 @@ session = requests.Session()
 debug("Imports/Setup done")
 
 
-def get(url: str) -> State:
+def get(url: str, get_data: bool=True) -> State:
     """ Send a GET request, including authentication, then return the result as json."""
     resp: JSON_DICT = session.get(url, auth=(API_TOKEN, "api_token"), timeout=TIMEOUT).json(parse_int=str)
-    return resp.get("data")
+    return resp.get("data") if get_data else resp
 
 
-def post(url: str, json: JSON_DICT) -> State:
+def post(url: str, json: JSON_DICT, get_data: bool=True) -> State:
     """ Send a POST request with json data, including authentication, then return the result as json."""
     resp: JSON_DICT = session.post(url, auth=(API_TOKEN, "api_token"), timeout=TIMEOUT, json=json).json(parse_int=str)
-    return resp.get("data")
+    return resp.get("data") if get_data else resp
 
 
-def put(url: str) -> State:
+def put(url: str, get_data: bool=True) -> State:
     """ Send a PUT request, including authentication, then return the result as json."""
     resp: JSON_DICT = session.put(url, auth=(API_TOKEN, "api_token"), timeout=TIMEOUT).json(parse_int=str)
-    return resp.get("data")
+    return resp.get("data") if get_data else resp
 
 
 def write_cache(current: State=None):
