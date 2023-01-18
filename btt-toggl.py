@@ -28,6 +28,7 @@ USAGE = """
     btt-toggl.py remove_tag -t <tag>                # removes tag from current entry
     btt-toggl.py toggle_tag -t <tag>                # if tag is in current entry, remove it. otherwise, add it.
 
+    btt-toggl.py get_project_dict                   # gets workspaces and projects from Toggl and prints them in a format that can be copied into config.py for WID_PID_DICT
     btt-toggl.py -h                                 # shows help message
 """
 
@@ -35,6 +36,7 @@ TIME_ENTRY = "https://api.track.toggl.com/api/v8/time_entries/{}"
 CURRENT = "https://api.track.toggl.com/api/v8/time_entries/current"
 START = "https://api.track.toggl.com/api/v8/time_entries/start"
 STOP = "https://api.track.toggl.com/api/v8/time_entries/{}/stop"
+PROJECTS = "https://api.track.toggl.com/api/v9/me/projects"
 
 JSON_TYPES = Union[dict, list, str, bool, type(None)]
 WID_PID_TYPE = dict[str, dict[str, str]]
@@ -253,6 +255,23 @@ def main(general: bool, mode: str, wid: Optional[str]=None, pid: Optional[str]=N
     elif mode == "start": start(wid, pid, tag)
     elif mode == "stop": stop()
 
+def get_project_dict() -> WID_PID_TYPE:
+    """ Query Toggl for all workspaces and projects """
+    debug("Getting WID_PID_DICT from Toggl")
+    projects = get(PROJECTS, False)
+    d: WID_PID_TYPE = dict()
+    for project in projects:
+        if project["wid"] not in d:
+            d[project["wid"]] = dict()
+        d[project["wid"]][project["id"]] = project["name"]
+    prefix = "WID_PID_DICT: dict[str, dict[str, str]] ="
+    d_str = "\n".join([" "*len(prefix) + line if i else line for i, line in enumerate(json.dumps(d, indent=2).splitlines())])
+
+    debug("Printing WID_PID_DICT definition code")
+    print(f"\n{'~'*os.get_terminal_size().columns}\n\n{prefix} {d_str}\n\n{'~'*os.get_terminal_size().columns}\n", flush=True)
+    debug("Done printing WID_PID_DICT definition code. Copy the above into your config file, replacing the placeholder WID_PID_DICT definition.")
+    return d
+
 
 if __name__ == "__main__":
     ## parse args/env vars
@@ -262,7 +281,7 @@ if __name__ == "__main__":
     if mode is None:
         debug("Using CLI args")
         parser = ArgumentParser(usage=USAGE)
-        parser.add_argument("mode", choices=["status", "toggle", "start", "stop", "add_tag", "remove_tag", "toggle_tag"])
+        parser.add_argument("mode", choices=["status", "toggle", "start", "stop", "add_tag", "remove_tag", "toggle_tag", "get_project_dict"])
         parser.add_argument("-w", "--wid", type=str, help="workspace ID")
         parser.add_argument("-p", "--pid", type=str, help="project ID")
         parser.add_argument("-t", "--tag", type=str, help="tag to add to current/new entry")
@@ -299,17 +318,17 @@ if __name__ == "__main__":
                 (wid is not None) and (pid is not None),
                 f"Workspace ID and Project ID must be set in {mode} mode\n",
             )
-        elif mode in ["add_tag", "remove_tag", "toggle_tag"]:
+        elif mode in ["add_tag", "remove_tag", "toggle_tag", "get_project_dict"]:
             assert_false(
                 (wid is None) and (pid is None),
                 f"Workspace ID and Project ID are not used in {mode} mode\n",
             )
         if general:
             assert_false(
-                mode in ["status", "stop", "add_tag", "remove_tag", "toggle_tag"],
+                mode in ["status", "stop", "add_tag", "remove_tag", "toggle_tag", "get_project_dict"],
                 f"Workspace ID and Project ID must be set in {mode} mode\n",
             )
-        else:
+        elif not mode == "get_project_dict":
             assert_false(
                 wid in WID_PID_DICT.keys(),
                 f"Workspace ID {wid} not found. Make sure WID_PID_DICT is correct in config.py\n",
@@ -327,7 +346,10 @@ if __name__ == "__main__":
 
     ## run script
     try:
-        main(general, mode, wid, pid, tag)
+        if mode == "get_project_dict":
+            get_project_dict()
+        else:
+            main(general, mode, wid, pid, tag)
         os._exit(0)
     except json.JSONDecodeError as e:  # for other exceptions, we shouldn't be silent
         msg = "Did you change your API key? Make sure it's correct in config.py"
