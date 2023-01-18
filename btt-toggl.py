@@ -36,6 +36,8 @@ USAGE = """
         --no-validation                             # skips validation of command line arguments, paths, etc.
         --curl                                      # uses curl backend
         --requests                                  # uses requests backend (default if available)
+        --urllib                                    # uses urllib backend
+        --urllib3                                   # uses urllib3 backend
 """
 
 TIME_ENTRY = "https://api.track.toggl.com/api/v9/workspaces/{}/time_entries/{}"
@@ -59,8 +61,6 @@ if logging_kwargs:
         pass
     finally:
         basicConfig(**logging_kwargs)
-        debug("Debug logs enabled")
-        info("Info logs enabled")
 
 if "--curl" in sys.argv:
     from backends.curl import get, post, put, patch
@@ -68,13 +68,19 @@ if "--curl" in sys.argv:
 elif "--requests" in sys.argv:
     from backends.requests import get, post, put, patch
     debug("Using requests backend (forced)")
+elif "--urllib" in sys.argv:
+    from backends.urllib import get, post, put, patch
+    debug("Using urllib backend (forced)")
+elif "--urllib3" in sys.argv:
+    from backends.urllib3 import get, post, put, patch
+    debug("Using urllib3 backend (forced)")
 else:
     try:
-        from backends.requests import get, post, put, patch
-        debug("Found requests installation; using requests backend")
+        from backends.urllib3 import get, post, put, patch
+        debug("Found urllib3 installation; using urllib3 backend")
     except ImportError:
         from backends.curl import get, post, put, patch
-        debug("No requests installation found; using curl backend")
+        debug("No urllib3 installation found; using curl backend")
 
 if "--no-validation" in sys.argv:
     debug("Validation disabled")
@@ -333,6 +339,8 @@ if __name__ == "__main__":
         parser.add_argument("--info", action="store_true", help="show info messages")
         parser.add_argument("--curl", action="store_true", help="use curl backend")
         parser.add_argument("--requests", action="store_true", help="use requests backend")
+        parser.add_argument("--urllib", action="store_true", help="use urllib backend")
+        parser.add_argument("--urllib3", action="store_true", help="use urllib3 backend")
         parser.add_argument("--no-validation", action="store_true", help="disable validation of args")
         args = parser.parse_args()
         mode = args.mode

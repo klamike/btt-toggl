@@ -3,49 +3,51 @@ from subprocess import check_output
 from typing import Optional
 from logging import debug
 
-from custom_types import JSON_DICT, State
+from custom_types import STR_KEY_JSON, State
 from config import API_TOKEN
 
 CURL   = "curl -s "
 AUTH   = f"-u {API_TOKEN}:api_token "
 HEADER = '-H "Content-Type: application/json" '
+PREFIX = CURL + AUTH + HEADER
+
 DATA   = " -d '{}' "
 GET, POST, PUT, PATCH = "-X GET ", "-X POST ", "-X PUT ", "-X PATCH "
 
 def get(url: str) -> State:
     """ Send a GET request, including authentication, then return the result as json."""
-    command = CURL + AUTH + GET + url
+    command = PREFIX + GET + url
     debug("Running command %s", command)
-    resp: JSON_DICT = check_output(command, shell=True).decode("utf-8")
-    return _json.loads(resp, parse_int=str)
 
-def post(url: str, json: JSON_DICT) -> State:
+    resp: State = _json.loads(check_output(command, shell=True).decode("utf-8"), parse_int=str)
+    return resp
+
+def post(url: str, json: STR_KEY_JSON) -> State:
     """ Send a POST request with json data, including authentication, then return the result as json."""
-    command = CURL + AUTH + HEADER + POST + DATA.format(_json.dumps(json)) + url
+    command = PREFIX + POST + DATA.format(_json.dumps(json)) + url
     debug("Running command %s", command)
-    resp: JSON_DICT = check_output(command, shell=True).decode("utf-8")
-    return _json.loads(resp, parse_int=str)
 
-def put(url: str, json: Optional[JSON_DICT]=None) -> State:
+    resp: State = _json.loads(check_output(command, shell=True).decode("utf-8"), parse_int=str)
+    return resp
+
+def put(url: str, json: Optional[STR_KEY_JSON]=None) -> State:
     """ Send a PUT request, including authentication, then return the result as json."""
     if json is not None:
-        command = CURL + AUTH + HEADER + PUT + DATA.format(_json.dumps(json)) + url
-        debug("Running command %s", command)
-        resp: JSON_DICT = check_output(command, shell=True).decode("utf-8")
+        command = PREFIX + PUT + DATA.format(_json.dumps(json)) + url
     else:
-        command = CURL + AUTH + HEADER + PUT + url
-        debug("Running command %s", command)
-        resp: JSON_DICT = check_output(command, shell=True).decode("utf-8")
-    return _json.loads(resp, parse_int=str)
+        command = PREFIX + PUT + url
+    debug("Running command %s", command)
 
-def patch(url: str, json: Optional[JSON_DICT]=None) -> State:
+    resp: State = _json.loads(check_output(command, shell=True).decode("utf-8"), parse_int=str)
+    return resp
+
+def patch(url: str, json: Optional[STR_KEY_JSON]=None) -> State:
     """ Send a PATCH request with json data, including authentication, then return the result as json."""
     if json is not None:
-        command = CURL + AUTH + HEADER + PATCH + DATA.format(_json.dumps(json)) + url
-        debug("Running command %s", command)
-        resp: JSON_DICT = check_output(command, shell=True).decode("utf-8")
+        command = PREFIX + PATCH + DATA.format(_json.dumps(json)) + url
     else:
-        command = CURL + AUTH + HEADER + PATCH + url
-        debug("Running command %s", command)
-        resp: JSON_DICT = check_output(command, shell=True).decode("utf-8")
-    return _json.loads(resp, parse_int=str)
+        command = PREFIX + PATCH + url
+    debug("Running command %s", command)
+
+    resp: State = _json.loads(check_output(command, shell=True).decode("utf-8"), parse_int=str)
+    return resp
