@@ -11,6 +11,8 @@ headers = {"Authorization": f"Basic {token}", "Content-Type": "application/json"
 
 import urllib.request, urllib.error, urllib.parse
 
+NoInternetException = (urllib.error.URLError, urllib.error.HTTPError)
+
 def do_request(req: urllib.request.Request) -> State:
     with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
         resp: State = _json.loads(resp.read(), parse_int=str)

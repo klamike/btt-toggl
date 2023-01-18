@@ -1,10 +1,10 @@
 import os, sys, json as _json
 from typing import Optional
 from base64 import b64encode
-from logging import debug
+from logging import debug, getLogger
 
 try:
-    import urllib3
+    import urllib3, urllib3.exceptions, urllib3.poolmanager
 except ImportError as e:
     print(f"Requested `urllib3` backend but could not import it.\n Install with: \n\t {sys.executable} -m pip install urllib3", flush=True)
     os._exit(1)
@@ -15,7 +15,10 @@ from config import API_TOKEN, TIMEOUT
 token = b64encode(f"{API_TOKEN}:api_token".encode("utf-8")).decode("utf-8")
 headers = {"Authorization": f"Basic {token}", "Content-Type": "application/json"}
 
-http = urllib3.PoolManager()
+NoInternetException = (urllib3.exceptions.NewConnectionError, urllib3.exceptions.MaxRetryError)
+if "--debug" not in sys.argv and "--info" not in sys.argv: getLogger("urllib3").setLevel("ERROR")
+
+http = urllib3.poolmanager.PoolManager()
 
 def get_data(resp: urllib3.HTTPResponse) -> State:
     """ Return the json data (if any) from a HTTPResponse object."""
@@ -51,4 +54,3 @@ def patch(url: str, json: Optional[STR_KEY_JSON]=None) -> State:
         kwargs['body'] = _json.dumps(json)
     resp: urllib3.HTTPResponse = http.request("PATCH", url, **kwargs)
     return get_data(resp)
-

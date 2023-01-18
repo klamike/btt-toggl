@@ -1,5 +1,5 @@
 # btt-toggl
-Control [Toggl](https://track.toggl.com) timers across different workspaces and projects via [BetterTouchTool](https://folivora.ai/) touchbar widgets. Uses Toggl API v9. Includes tag support, caching to cut down on network requests, and can use `cURL` or `requests` to make API calls.
+Control [Toggl](https://track.toggl.com) timers across different workspaces and projects via [BetterTouchTool](https://folivora.ai/) touchbar widgets. Uses Toggl API v9. Includes tag support, caching to cut down on network requests, and can use `cURL`, `requests`, `urllib`, or `urllib3` to make API calls.
 
 ![multi](readme_img/multi.png)
 

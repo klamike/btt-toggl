@@ -1,7 +1,5 @@
 import os, sys, json
 
-import requests, subprocess
-
 from datetime import datetime, timezone
 from pathlib import Path
 from argparse import ArgumentParser
@@ -63,23 +61,23 @@ if logging_kwargs:
         basicConfig(**logging_kwargs)
 
 if "--curl" in sys.argv:
-    from backends.curl import get, post, put, patch
+    from backends.curl import get, post, put, patch, NoInternetException
     debug("Using curl backend (forced)")
 elif "--requests" in sys.argv:
-    from backends.requests import get, post, put, patch
+    from backends.requests import get, post, put, patch, NoInternetException
     debug("Using requests backend (forced)")
 elif "--urllib" in sys.argv:
-    from backends.urllib import get, post, put, patch
+    from backends.urllib import get, post, put, patch, NoInternetException
     debug("Using urllib backend (forced)")
 elif "--urllib3" in sys.argv:
-    from backends.urllib3 import get, post, put, patch
+    from backends.urllib3 import get, post, put, patch, NoInternetException
     debug("Using urllib3 backend (forced)")
 else:
     try:
-        from backends.urllib3 import get, post, put, patch
+        from backends.urllib3 import get, post, put, patch, NoInternetException
         debug("Found urllib3 installation; using urllib3 backend")
     except ImportError:
-        from backends.curl import get, post, put, patch
+        from backends.curl import get, post, put, patch, NoInternetException
         debug("No urllib3 installation found; using curl backend")
 
 if "--no-validation" in sys.argv:
@@ -411,7 +409,7 @@ if __name__ == "__main__":
         msg = "Did you change your API key? Make sure it's correct in config.py"
         print(f"\n{msg}\n{format_exc()}\n{msg}\n", file=sys.stderr)
     # if no internet, fail (semi-)silently
-    except (requests.ConnectionError, subprocess.CalledProcessError) as e:
+    except (*NoInternetException, ConnectionError) as e:
         if mode == "status" and general:
             debug("Failing silently due to lack of internet connection")
             send_to_btt(make_status(data=None, general=True, wid=None, pid=None, v=True))
