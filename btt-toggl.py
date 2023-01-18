@@ -6,7 +6,7 @@ from functools import partial
 
 from typing import Optional, Union
 from traceback import format_exc
-from logging import debug, basicConfig
+from logging import debug, info, basicConfig
 
 from config import API_TOKEN, PATH_TO_ACTIVE_IMG, PATH_TO_INACTIVE_IMG, PATH_TO_CACHE_FILE, WID_PID_DICT, TAG_ALL_ENTRIES, VALIDATION, TIMEOUT
 
@@ -45,16 +45,21 @@ State = Optional[JSON_DICT]
 
 send_to_btt = partial(print, flush=True, file=sys.stdout)
 
+logging_kwargs = None
 if "--debug" in sys.argv or str(os.environ.get("BTTT_DEBUG")).lower() in ['true', '1']:
-    kwargs = dict(level="DEBUG", format="%(message)s", datefmt="[%X]")
+    logging_kwargs = dict(level="DEBUG", format="%(message)s", datefmt="[%X]")
+elif "get_project_dict" in sys.argv:
+    logging_kwargs = dict(level="INFO", format="%(message)s", datefmt="[%X]")
+if logging_kwargs:
     try:
         from rich.logging import RichHandler
-        kwargs["handlers"] = [RichHandler(omit_repeated_times=False)]
+        logging_kwargs["handlers"] = [RichHandler(omit_repeated_times=False)]
     except ImportError:
         pass
     finally:
-        basicConfig(**kwargs)
+        basicConfig(**logging_kwargs)
         debug("Debug logs enabled")
+        info("Info logs enabled")
 
 session = requests.Session()
 
@@ -268,8 +273,8 @@ def get_project_dict() -> WID_PID_TYPE:
     d_str = "\n".join([" "*len(prefix) + line if i else line for i, line in enumerate(json.dumps(d, indent=2).splitlines())])
 
     debug("Printing WID_PID_DICT definition code")
-    print(f"\n{'~'*os.get_terminal_size().columns}\n\n{prefix} {d_str}\n\n{'~'*os.get_terminal_size().columns}\n", flush=True)
-    debug("Done printing WID_PID_DICT definition code. Copy the above into your config file, replacing the placeholder WID_PID_DICT definition.")
+    print(f"{'~'*os.get_terminal_size().columns}\n\n{prefix} {d_str}\n\n{'~'*os.get_terminal_size().columns}", flush=True)
+    info("Copy the above into your config file, replacing the placeholder WID_PID_DICT definition on line 16.")
     return d
 
 
