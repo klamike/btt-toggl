@@ -3,7 +3,7 @@ from subprocess import check_output, CalledProcessError
 from typing import Optional
 from logging import debug
 
-from custom_types import STR_KEY_JSON, State
+from utils import STR_KEY_JSON, State
 from config import API_TOKEN
 
 CURL   = "curl -s "

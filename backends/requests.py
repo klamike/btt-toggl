@@ -7,7 +7,7 @@ except ImportError as e:
     print(f"{'~'*os.get_terminal_size().columns}\nRequested `requests` backend but could not import it.\n Install with: \n\t {sys.executable} -m pip install requests\n{'~'*os.get_terminal_size().columns}", flush=True)
     raise e
 
-from custom_types import STR_KEY_JSON, State
+from utils import STR_KEY_JSON, State
 from config import API_TOKEN, TIMEOUT
 
 session = requests.Session()

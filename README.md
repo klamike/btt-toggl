@@ -5,14 +5,14 @@ Control [Toggl](https://track.toggl.com) timers across different workspaces and 
 
 ## Installation
 
-`btt-toggl` depends on Python ≥3.8 (and the `PycURL`/`requests`/`urllib3` libraries if you want to use those backends). If you already have a Python installation, you can use that. To get some more speed you can also use [pypy3](https://www.pypy.org/features.html), which you can install with [Homebrew](https://brew.sh/) using `brew install pypy3`. Then:
+`btt-toggl` depends on Python ≥3.8 (and the `PycURL`/`requests`/`urllib3` libraries if you want to use those backends). To install:
 
-1. Clone `btt-toggl` to your local machine by running `git clone https://github.com/klamike/btt-toggl`
-2. Edit `config_example.py` file:
-    - Get your Toggl Token from the the bottom of the [Profile Settings page](https://track.toggl.com/profile)
-    - Edit the paths/images to match your setup, if needed.
-    - Edit the dictionary to include your mapping of workspace and project IDs. You can find these by clicking on a project from [https://track.toggl.com/projects](https://track.toggl.com/projects) and inspecting the URL. It will have the following form: `https://track.toggl.com/<workspace_id>/projects/<project_id>/team`. Alternatively, run `python btt-toggl.py get_project_dict` to fetch this information from the Toggl API.
+1. Clone `btt-toggl` to your computer by running `git clone https://github.com/klamike/btt-toggl`
+2. Edit the `config_example.py` file:
     - Rename the file from `config_example.py` to `config.py`
+    - Get your API Token from the the bottom of the [Profile Settings page](https://track.toggl.com/profile)
+    - Edit the dictionary to include your mapping of workspace and project IDs. You can find these by clicking on a project from [https://track.toggl.com/projects](https://track.toggl.com/projects) and inspecting the URL. It will have the following form: `https://track.toggl.com/<workspace_id>/projects/<project_id>/team`. Alternatively, run `python btt-toggl.py get_project_dict` to fetch this information from the Toggl API.
+    - Edit the paths/images to match your setup, if needed.
 3. Done! You can quickly run `python btt-toggl.py status` to make sure everything works. You should see a JSON string with a path to your active/inactive image.
 
 ## CLI options
@@ -44,19 +44,25 @@ Control [Toggl](https://track.toggl.com) timers across different workspaces and 
 
 ## BetterTouchTool setup
 
-`btt-toggl` provides several useful commands to integrate with BetterTouchTool. The `status` mode returns a style string for automatically changing button icons/text, so it should be run every few seconds. The `toggle` and `add_tag` modes should be run on button click, to execute their respective actions.
+`btt-toggl` provides several useful commands to integrate with BetterTouchTool. There are split in two groups: status and actions.
 
-To cut down on network requests and CPU load, `btt-toggl` implements a JSON file cache which is updated **only** when `btt-toggl.py status` is run without additional arguments. Thus, **you must have a button running this script for the project-specific buttons to work.**
+ The `status` mode prints a style string which BetterTouchTool uses to change button icons/text.
 
-In my configuration, I have a general status icon with an Open Button Group action, which brings up project-specific buttons. The general status icon runs `btt-toggl.py status` every 5 seconds. The project-specific buttons run `btt-toggl.py status -w <workspace_id> -p <project_id>` every 3 seconds. Each project-specific button also toggles its respective project on click, via `btt-toggl.py toggle -w <workspace_id> -p <project_id>`. I also have three tag buttons which on click run `btt-toggl.py add_tag -t <tag>`.
+ The `toggle` and `toggle_tag` modes are designed as on-click actions. The individual `start`/`stop` and `add_tag`/`remove_tag` are also available.
+
+To cut down on network requests and CPU load, `btt-toggl` implements a JSON file cache which is updated when an action command is run, and when the **general** status, i.e. `btt-toggl.py status` without specifying workspace/project/tag, is run. This is to prevent a bunch of project/tag-specific status buttons from all sending requests to Toggl at once. Thus, workspace/project/tag-specific status, e.g. `btt-toggl.py status -w <workspace_id> -p <project_id>` does not send a request to Toggl - it reads from the cache.
+
+In my configuration, I have a general status icon with an Open Button Group action, which brings up project-specific buttons. The general status icon runs `btt-toggl.py status` every 5 seconds. The project-specific buttons run `btt-toggl.py status -w <workspace_id> -p <project_id>` every 5 seconds. Each project-specific button also toggles its respective project on click, via `btt-toggl.py toggle -w <workspace_id> -p <project_id>`.
 
 ### Status icons
+
+The below examples use the placeholder `/full/path/to/python` for the full path to your Python ≥3.8 executable. Run `which python` to find this path for your computer. Likewise, `/full/path/to/btt-toggl/` is a placeholder for the full path to the local copy of the `btt-toggl` repo.
 
 Create a Shell Script/Task widget and set:
 
     Launch Path: /bin/bash
     Parameters: -c
-    Script: /usr/local/bin/pypy3 /path/to/folder/btt-toggl.py status
+    Script: /full/path/to/python /full/path/to/btt-toggl/btt-toggl.py status
 
 ![off](readme_img/off.png)
 
@@ -68,7 +74,7 @@ Create a widget and assign it the Execute Shell Script/Task action. Then, set th
 
     Launch Path: /bin/bash
     Parameters: -c
-    Script: /usr/local/bin/pypy3 /path/to/folder/btt-toggl.py toggle -w <workspace_id> -p <project_id>
+    Script: /full/path/to/python /full/path/to/btt-toggl/btt-toggl.py toggle -w <workspace_id> -p <project_id>
 
 ![multi](readme_img/multi.png)
 
@@ -78,7 +84,7 @@ Create a widget and assign it the Execute Shell Script/Task action. Then, set th
 
     Launch Path: /bin/bash
     Parameters: -c
-    Script: /usr/local/bin/pypy3 /path/to/folder/btt-toggl.py add_tag -t <tag>
+    Script: /full/path/to/python /full/path/to/btt-toggl/btt-toggl.py add_tag -t <tag>
 
 ## Failure modes
 
@@ -93,8 +99,6 @@ For other exceptions, `btt-toggl` will exit with error. You can run the script m
 
 ## To-Do:
 
-- Update documentation with new tag commands
-- Compare cURL vs requests backends
+- Update documentation with new tag buttons/screenshots
+- Compare backends
 - Make non-general (cached) status faster/cleaner
-- Add support for multiple tags in CLI
-

@@ -11,7 +11,7 @@ from typing import Optional
 from base64 import b64encode
 from logging import debug
 
-from custom_types import STR_KEY_JSON, State
+from utils import STR_KEY_JSON, State
 from config import API_TOKEN, TIMEOUT
 
 NoInternetExceptions = (pc.error,)
