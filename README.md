@@ -1,11 +1,11 @@
 # btt-toggl
-Control [Toggl](https://track.toggl.com) timers across different workspaces and projects via [BetterTouchTool](https://folivora.ai/) touchbar widgets. Uses Toggl API v9. Includes tag support, caching to cut down on network requests, and can use `cURL`, `requests`, `urllib`, or `urllib3` to make API calls.
+Control [Toggl](https://track.toggl.com) timers across different workspaces and projects via [BetterTouchTool](https://folivora.ai/) touchbar widgets. Uses Toggl API v9. Includes tag support, caching to cut down on network requests, and can use `cURL`, `PycURL`, `requests`, `urllib`, or `urllib3` to make API calls.
 
 ![multi](readme_img/multi.png)
 
 ## Installation
 
-`btt-toggl` depends on Python ≥3.8 (and the `requests`/`urllib3` libraries if you want to use those backends). If you already have a Python installation, you can use that. To get some more speed you can also use [pypy3](https://www.pypy.org/features.html), which you can install with [Homebrew](https://brew.sh/) using `brew install pypy3`. Then:
+`btt-toggl` depends on Python ≥3.8 (and the `PycURL`/`requests`/`urllib3` libraries if you want to use those backends). If you already have a Python installation, you can use that. To get some more speed you can also use [pypy3](https://www.pypy.org/features.html), which you can install with [Homebrew](https://brew.sh/) using `brew install pypy3`. Then:
 
 1. Clone `btt-toggl` to your local machine by running `git clone https://github.com/klamike/btt-toggl`
 2. Edit `config_example.py` file:
@@ -36,10 +36,11 @@ Control [Toggl](https://track.toggl.com) timers across different workspaces and 
         --debug                                     # prints debug messages
         --info                                      # prints info messages
         --no-validation                             # skips validation of command line arguments, paths, etc.
-        --curl                                      # uses curl backend
-        --requests                                  # uses requests backend (default if available)
+        --curl                                      # uses curl backend (default)
+        --requests                                  # uses requests backend
         --urllib                                    # uses urllib backend
         --urllib3                                   # uses urllib3 backend
+        --pycurl                                    # uses pycurl backend
 
 ## BetterTouchTool setup
 

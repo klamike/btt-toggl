@@ -1,11 +1,11 @@
-import os, sys
+import sys
 from typing import Optional
 
 try:
     import requests
 except ImportError as e:
     print(f"Requested `requests` backend but could not import it.\n Install with: \n\t {sys.executable} -m pip install requests", flush=True)
-    os._exit(1)
+    raise e
 
 from custom_types import STR_KEY_JSON, State
 from config import API_TOKEN, TIMEOUT

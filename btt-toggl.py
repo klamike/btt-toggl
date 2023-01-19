@@ -36,6 +36,7 @@ USAGE = """
         --requests                                  # uses requests backend (default if available)
         --urllib                                    # uses urllib backend
         --urllib3                                   # uses urllib3 backend
+        --pycurl                                    # uses pycurl backend
 """
 
 TIME_ENTRY = "https://api.track.toggl.com/api/v9/workspaces/{}/time_entries/{}"
@@ -72,13 +73,12 @@ elif "--urllib" in sys.argv:
 elif "--urllib3" in sys.argv:
     from backends.urllib3 import get, post, put, patch, NoInternetExceptions
     debug("Using urllib3 backend (forced)")
+elif "--pycurl" in sys.argv:
+    from backends.pycurl import get, post, put, patch, NoInternetExceptions
+    debug("Using pycurl backend (forced)")
 else:
-    try:
-        from backends.urllib3 import get, post, put, patch, NoInternetExceptions
-        debug("Found urllib3 installation; using urllib3 backend")
-    except ImportError:
-        from backends.curl import get, post, put, patch, NoInternetExceptions
-        debug("No urllib3 installation found; using curl backend")
+    from backends.curl import get, post, put, patch, NoInternetExceptions
+    debug("No urllib3 installation found; using curl backend")
 
 if "--no-validation" in sys.argv:
     debug("Validation disabled")
@@ -194,7 +194,7 @@ def add_tag(new_tag: str, state: Optional[dict]=None, cache: bool=True):
 
     json_dict = dict(tags=tags)
 
-    state = put(TIME_ENTRY.format(state['wid'], state['id']), json_dict)
+    state = put(TIME_ENTRY.format(state['workspace_id'], state['id']), json_dict)
 
     return write_cache(state) if cache else state
 
@@ -211,7 +211,7 @@ def remove_tag(old_tag: str, state: Optional[dict]=None, cache: bool=True):
 
     json_dict = dict(tags=tags)
 
-    state = put(TIME_ENTRY.format(state['wid'], state['id']), json_dict)
+    state = put(TIME_ENTRY.format(state['workspace_id'], state['id']), json_dict)
 
     return write_cache(state) if cache else state
 
@@ -256,7 +256,7 @@ def make_status(data: Optional[dict]=None, general: bool=False, wid: Optional[st
     else:
         active = False
 
-    debug("Making %s style string %s", "active" if active else "inactive", ("for " + str((wid, pid))) if not general else "")
+    debug("Making %s style string %s", "active" if active else "inactive", "" if general else ("for " + str((wid, pid))))
 
     icon_path = PATH_TO_ACTIVE_IMG if active else PATH_TO_INACTIVE_IMG
     if not general:
@@ -339,6 +339,7 @@ if __name__ == "__main__":
         parser.add_argument("--requests", action="store_true", help="use requests backend")
         parser.add_argument("--urllib", action="store_true", help="use urllib backend")
         parser.add_argument("--urllib3", action="store_true", help="use urllib3 backend")
+        parser.add_argument("--pycurl", action="store_true", help="use pycurl backend")
         parser.add_argument("--no-validation", action="store_true", help="disable validation of args")
         args = parser.parse_args()
         mode = args.mode
