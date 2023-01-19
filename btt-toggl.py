@@ -317,7 +317,7 @@ def get_project_dict() -> WID_PID_TYPE:
 
     debug("Printing WID_PID_DICT definition code")
     print(f"{'~'*os.get_terminal_size().columns}\n\n{prefix} {d_str}\n\n{'~'*os.get_terminal_size().columns}", flush=True)
-    info("Copy the above code into your config file, replacing the placeholder WID_PID_DICT definition on line 16. Feel free to change the descriptions associated with each project.")
+    info("Copy the above code into your config file, replacing the placeholder WID_PID_DICT definition (on line 18). Feel free to change the descriptions associated with each project.")
     return d
 
 
