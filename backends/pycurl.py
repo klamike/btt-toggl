@@ -1,9 +1,9 @@
-import sys, json as _json
+import os, sys, json as _json
 
 try:
     import pycurl as pc
 except ImportError as e:
-    print(f"Requested `pycurl` backend but could not import it.\n Install with: \n\t {sys.executable} -m pip install pycurl", flush=True)
+    print(f"{'~'*os.get_terminal_size().columns}\nRequested `pycurl` backend but could not import it.\n Install with: \n\t {sys.executable} -m pip install --compile --install-option=\"--with-openssl\" pycurl\n{'~'*os.get_terminal_size().columns}", flush=True)
     raise e
 
 from io import BytesIO
