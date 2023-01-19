@@ -18,16 +18,16 @@ Control [Toggl](https://track.toggl.com) timers across different workspaces and 
 ## CLI options
 
     btt-toggl.py status                             # prints general BTT style string (active if logging any project)
-    btt-toggl.py stop                               # stops current entry
-
     btt-toggl.py status -w <wid> -p <pid>           # prints BTT style string for <wid> <pid> (active only if logging <wid> <pid>)
     btt-toggl.py status -t <tag>                    # prints BTT style string for <tag> (active only if current entry tags contains <tag>)
+
     btt-toggl.py toggle -w <wid> -p <pid> -t <tag>  # if <wid> <pid> is currently running, stop entry. otherwise, stop current and start new entry (tag optional)
     btt-toggl.py start -w <wid> -p <pid> -t <tag>   # starts new entry (tag optional)
+    btt-toggl.py stop                               # stops current entry
 
+    btt-toggl.py toggle_tag -t <tag>                # if tag is in current entry, remove it. otherwise, add it.
     btt-toggl.py add_tag -t <tag>                   # adds tag to current entry
     btt-toggl.py remove_tag -t <tag>                # removes tag from current entry
-    btt-toggl.py toggle_tag -t <tag>                # if tag is in current entry, remove it. otherwise, add it.
 
     btt-toggl.py get_project_dict                   # gets workspaces and projects from Toggl and prints them in a format that can be copied into config.py for WID_PID_DICT
     btt-toggl.py -h                                 # shows help message
@@ -36,8 +36,8 @@ Control [Toggl](https://track.toggl.com) timers across different workspaces and 
         --debug                                     # prints debug messages
         --info                                      # prints info messages
         --no-validation                             # skips validation of command line arguments, paths, etc.
-        --curl                                      # uses curl backend (default)
-        --requests                                  # uses requests backend
+        --curl                                      # uses curl backend
+        --requests                                  # uses requests backend (default if available)
         --urllib                                    # uses urllib backend
         --urllib3                                   # uses urllib3 backend
         --pycurl                                    # uses pycurl backend
