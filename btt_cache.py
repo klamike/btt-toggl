@@ -39,6 +39,6 @@ def read_cache_tag(tag: str):
 
     with open(PATH_TO_CACHE_FILE, "r") as f:
         out_dict: CACHE_TYPE = json.load(f)
-        match = tag in out_dict["tags"]
+        match = tag in out_dict.get("tags", list())
         debug("Found %s in cache" if match else "No %s in cache", tag)
         return match
