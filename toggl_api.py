@@ -152,7 +152,7 @@ def get_project_dict() -> WID_PID_TYPE:
 
 
 def backend_test(verbose: bool=False):
-    info("Testing backends by sending four GET requests - two to PROJECTS and two to CURRENT.") # TODO: add post/patch/put
+    info("Testing backends by sending one GET request to CURRENT.") # TODO: add post/patch/put
 
     profiler_kwargs = dict(interval=0.0001)
     output_kwargs = dict(unicode=True, color=True)
@@ -166,8 +166,8 @@ def backend_test(verbose: bool=False):
 
     def test_backend(backend):
         info("Testing %s", backend.__name__)
-        for _ in range(2):
-            for url in [PROJECTS, CURRENT]: backend.get(url)
+        for _ in range(1): # btt-toggl will rarely need to send more than one request at a time, so it doesn't make sense to test multiple requests
+            for url in [CURRENT]: backend.get(url)
 
     results = dict()
 
