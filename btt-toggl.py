@@ -126,15 +126,16 @@ if __name__ == "__main__":
     ## run script
     try:
         if mode == "get_project_dict":
+            debug("Ignoring other args and returning project dict")
             get_project_dict()
         else:
             main(general, mode, wid, pid, tag)
         os._exit(0)
-    except json.JSONDecodeError as e:  # for other exceptions, we shouldn't be silent
+    except json.JSONDecodeError as e: # non-json response from Toggl API
         msg = "Did you change your API key? Make sure it's correct in config.py"
         print(f"\n{msg}\n{format_exc()}\n{msg}\n", file=sys.stderr)
     # if no internet, fail (semi-)silently
-    except (*NoInternetExceptions, ConnectionError) as e:
+    except (*NoInternetExceptions, ConnectionError) as e: # no internet
         if mode == "status" and general:
             debug("Failing silently due to lack of internet connection")
             send_to_btt(make_status(data=None, general=True, wid=None, pid=None))
