@@ -95,7 +95,7 @@ For other exceptions, `btt-toggl` will exit with error. You can run the script m
 ## Documentation
 
 [Toggl Track](https://track.toggl.com),
-[Toggl API v9](https://developers.track.toggl.com/docs/), [BTT Docs](https://docs.folivora.ai/), [BTT Forum](https://community.folivora.ai/), [PyPy](https://www.pypy.org/features.html)
+[Toggl API v9](https://developers.track.toggl.com/docs/), [BTT Docs](https://docs.folivora.ai/), [BTT Forum](https://community.folivora.ai/)
 
 ## To-Do:
 
