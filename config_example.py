@@ -13,8 +13,7 @@ PATH_TO_INACTIVE_IMG = (this_directory / 'images' / 'inactive.png').as_posix()
 # for speed, replace this with a literal string paths to the cache file
 PATH_TO_CACHE_FILE = (this_directory / 'cache.json').as_posix()
 
-
-# The background color (RGB) set when asking tag status
+# The background color (RGB) set when asking for general tag status
 TAG_ACTIVE_BACKGROUND_RGB = "223,51,54"
 TAG_INACTIVE_BACKGROUND_RGB = "85,85,85"
 
