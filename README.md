@@ -52,7 +52,7 @@ Control [Toggl](https://track.toggl.com) timers across different workspaces and 
 
 To cut down on network requests and CPU load, `btt-toggl` implements a JSON file cache which is updated when an action command is run, and when the **general** status, i.e. `btt-toggl.py status` without specifying workspace/project/tag, is run. This is to prevent a bunch of project/tag-specific status buttons from all sending requests to Toggl at once. Thus, workspace/project/tag-specific status, e.g. `btt-toggl.py status -w <workspace_id> -p <project_id>` does not send a request to Toggl - it reads from the cache.
 
-In my configuration, I have a general status icon with an Open Button Group action, which brings up project-specific buttons. The general status icon runs `btt-toggl.py status` every 5 seconds. The project-specific buttons run `btt-toggl.py status -w <workspace_id> -p <project_id>` every 5 seconds. Each project-specific button also toggles its respective project on click, via `btt-toggl.py toggle -w <workspace_id> -p <project_id>`.
+In my configuration, I have a general status icon with an Open Button Group action, which brings up project-specific buttons. The general status icon runs `btt-toggl.py status` every 5 seconds. The project-specific buttons run `btt-toggl.py status -w <workspace_id> -p <project_id>` every 5 seconds. Each project-specific button also toggles its respective project on click, via `btt-toggl.py toggle -w <workspace_id> -p <project_id>`. I also have some tag buttons which run `btt-toggl.py status -t <tag>` every 5 seconds and on click run `btt-toggl.py toggle_tag -t <tag>`.
 
 ### Status icons
 
