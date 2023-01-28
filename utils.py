@@ -1,8 +1,6 @@
 import sys, json
 
-from logging import debug
 from functools import partial
-from logging import basicConfig
 from typing import Optional, Union
 
 from config import WID_PID_DICT, PATH_TO_ACTIVE_IMG, PATH_TO_INACTIVE_IMG
@@ -47,6 +45,7 @@ if "--debug" in sys.argv:
 elif "--info" in sys.argv or "get_project_dict" in sys.argv:
     logging_kwargs = dict(level="INFO", format="%(message)s", datefmt="[%X]")
 if logging_kwargs:
+    from logging import debug, info, basicConfig
     try:
         from rich.logging import RichHandler
         logging_kwargs["handlers"] = [RichHandler(omit_repeated_times=False)]
@@ -54,7 +53,9 @@ if logging_kwargs:
         pass
     finally:
         basicConfig(**logging_kwargs)
-
+else:
+    def debug(*args, **kwargs): pass
+    def info(*args, **kwargs): pass
 
 def wid_pid_tag_match(data: Optional[dict]=None, wid: Optional[str]=None, pid: Optional[str]=None, tag: Optional[str]=None) -> bool:
     """Returns True if wid and pid and tag (if supplied) match the current entry."""

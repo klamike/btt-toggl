@@ -9,9 +9,8 @@ except ImportError as e:
 from io import BytesIO
 from typing import Optional
 from base64 import b64encode
-from logging import debug
 
-from utils import STR_KEY_JSON, State
+from utils import STR_KEY_JSON, State, debug
 from config import API_TOKEN, TIMEOUT
 
 NoInternetExceptions = (pc.error,)

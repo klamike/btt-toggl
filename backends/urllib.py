@@ -1,9 +1,8 @@
 import json as _json
 from typing import Optional
 from base64 import b64encode
-from logging import debug
 
-from utils import STR_KEY_JSON, State
+from utils import STR_KEY_JSON, State, debug
 from config import API_TOKEN, TIMEOUT
 
 token = b64encode(f"{API_TOKEN}:api_token".encode("utf-8")).decode("utf-8")

@@ -1,8 +1,6 @@
 import json
 
-from logging import debug
-
-from utils import make_status, State, CACHE_TYPE
+from utils import make_status, State, CACHE_TYPE, debug
 from config import WID_PID_DICT, PATH_TO_CACHE_FILE
 
 

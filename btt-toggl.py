@@ -1,12 +1,11 @@
 import os, sys, json
 
 from pathlib import Path
-from logging import debug
 from typing import Optional
 from traceback import format_exc
 from argparse import ArgumentParser
 
-from utils import make_status, send_to_btt, USAGE
+from utils import make_status, send_to_btt, USAGE, debug
 from btt_cache import read_cache, read_cache_tag, write_cache
 from toggl_api import get_current, toggle, start, stop, toggle_tag, add_tag, remove_tag, get_project_dict, NoInternetExceptions
 
@@ -83,7 +82,7 @@ if __name__ == "__main__":
         def assert_false(condition: bool, message: str):
             if not condition:
                 print(message, flush=True, file=sys.stderr)
-                os._exit(1)
+                raise AssertionError(message)
 
         ## validate args
         if tag is not None:
@@ -129,7 +128,7 @@ if __name__ == "__main__":
             get_project_dict()
         else:
             main(general, mode, wid, pid, tag)
-        os._exit(0)
+
     except json.JSONDecodeError as e: # non-json response from Toggl API
         msg = "Did you change your API key? Make sure it's correct in config.py"
         print(f"\n{msg}\n{format_exc()}\n{msg}\n", file=sys.stderr)
@@ -138,7 +137,6 @@ if __name__ == "__main__":
         if mode == "status" and general:
             debug("Failing silently due to lack of internet connection")
             send_to_btt(make_status(data=None, general=True, wid=None, pid=None))
-        os._exit(1)
     except (PermissionError, FileNotFoundError) as e:
         msg = "Is your cache file writeable?"
         print(f"\n{msg}\n{format_exc()}\n{msg}\n", file=sys.stderr)
@@ -146,4 +144,3 @@ if __name__ == "__main__":
         msg = "Something unexpected went wrong. Please report this error at https://github.com/klamike/btt-toggl/issues"
         print(f"\n{msg}\n{format_exc()}\n{msg}\n", file=sys.stderr)
 
-    os._exit(1)

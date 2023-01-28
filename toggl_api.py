@@ -1,12 +1,10 @@
 import os, sys, json
 
 from typing import Optional
-from logging import debug, info
-from datetime import datetime, timezone
 
 from btt_cache import write_cache
 from config import TAG_ALL_ENTRIES
-from utils import State, WID_PID_TYPE, wid_pid_tag_match
+from utils import State, WID_PID_TYPE, wid_pid_tag_match, debug, info
 
 TIME_ENTRY = "https://api.track.toggl.com/api/v9/workspaces/{}/time_entries/{}"
 CURRENT = "https://api.track.toggl.com/api/v9/me/time_entries/current"
@@ -52,7 +50,9 @@ def start(wid: str, pid: str, tag: Optional[str]=None, cache: bool=False):
     if tag:               tags.append(tag)
     if TAG_ALL_ENTRIES: tags.append("btt-toggl")
 
+    from datetime import datetime, timezone
     now = datetime.now(tz=timezone.utc)
+
     json_dict =  {"tags": tags, "start": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "duration": -1 * int(now.timestamp()),
                   "workspace_id": int(wid), "project_id": int(pid), "created_with": "btt-toggl"}
 

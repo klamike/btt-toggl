@@ -1,9 +1,8 @@
 import json as _json
 from subprocess import check_output, CalledProcessError
 from typing import Optional
-from logging import debug
 
-from utils import STR_KEY_JSON, State
+from utils import STR_KEY_JSON, State, debug
 from config import API_TOKEN
 
 CURL   = "curl -s "
