@@ -99,6 +99,5 @@ For other exceptions, `btt-toggl` will exit with error. You can run the script m
 
 ## To-Do:
 
-- Update documentation with new tag buttons/screenshots
-- Compare backends
-- Make non-general (cached) status faster/cleaner
+- Update backend comparison to include POST/PUT/PATCH requests
+- Update docs with backend comparison
