@@ -27,9 +27,11 @@ elif "--urllib3" in sys.argv:
 elif "--pycurl" in sys.argv:
     from backends.pycurl import get, post, put, patch, NoInternetExceptions
     debug("Using pycurl backend (forced)")
-else:
+elif __name__ != "__main__":
     from backends.curl import get, post, put, patch, NoInternetExceptions
     debug("No backend specified, using curl through subprocess")
+else:
+    debug("Running toggl_api.py as script; not importing any backends")
 
 
 def get_current(state: Optional[State]=None, force: bool=False) -> State:
@@ -147,3 +149,84 @@ def get_project_dict() -> WID_PID_TYPE:
     print(f"{'~'*os.get_terminal_size().columns}\n\n{prefix} {d_str}\n\n{'~'*os.get_terminal_size().columns}", flush=True)
     info("Copy the above code into your config file, replacing the placeholder WID_PID_DICT definition (on line 18). Feel free to change the descriptions associated with each project.")
     return d
+
+
+def backend_test(verbose: bool=False):
+    info("Testing backends by sending four GET requests - two to PROJECTS and two to CURRENT.") # TODO: add post/patch/put
+
+    profiler_kwargs = dict(interval=0.0001)
+    output_kwargs = dict(unicode=True, color=True)
+    round_to = 5
+
+    try:
+        import pyinstrument
+    except ImportError:
+        info("pyinstrument not installed, cannot test backends. Install with `pip install pyinstrument`")
+        return
+
+    def test_backend(backend):
+        info("Testing %s", backend.__name__)
+        for _ in range(2):
+            for url in [PROJECTS, CURRENT]: backend.get(url)
+
+    results = dict()
+
+    profiler = pyinstrument.Profiler(**profiler_kwargs)
+    profiler.start()
+    import backends.urllib
+    test_backend(backends.urllib)
+    profiler.stop()
+    if verbose: print("urllib", profiler.output_text(**output_kwargs))
+    results["urllib"] = round(profiler.last_session.duration, round_to)
+
+    profiler = pyinstrument.Profiler(**profiler_kwargs)
+    profiler.start()
+    import backends.urllib3
+    test_backend(backends.urllib3)
+    profiler.stop()
+    if verbose: print("urllib3", profiler.output_text(**output_kwargs))
+    results["urllib3"] = round(profiler.last_session.duration, round_to)
+
+    profiler = pyinstrument.Profiler(**profiler_kwargs)
+    profiler.start()
+    import backends.curl
+    test_backend(backends.curl)
+    profiler.stop()
+    if verbose: print("curl", profiler.output_text(**output_kwargs))
+    results["curl"] = round(profiler.last_session.duration, round_to)
+
+    profiler = pyinstrument.Profiler(**profiler_kwargs)
+    profiler.start()
+    import backends.pycurl
+    test_backend(backends.pycurl)
+    profiler.stop()
+    if verbose: print("pycurl", profiler.output_text(**output_kwargs))
+    results["pycurl"] = round(profiler.last_session.duration, round_to)
+
+    profiler = pyinstrument.Profiler(**profiler_kwargs)
+    profiler.start()
+    import backends.requests
+    test_backend(backends.requests)
+    profiler.stop()
+    if verbose: print("requests", profiler.output_text(**output_kwargs))
+    results["requests"] = round(profiler.last_session.duration, round_to)
+
+    fastest_backend = min(results, key=results.get)
+
+    print("Fastest backend: %s took %s seconds\n" % (fastest_backend, results[fastest_backend]))
+    for backend, duration in sorted(results.items(), key=lambda x: x[1]):
+        if backend != fastest_backend:
+            print("%s took %s -- %s times slower than %s" % (backend, duration, round(duration/results[fastest_backend],5), fastest_backend))
+
+    return results
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--verbose", action="store_true", help="show pyinstrument output")
+    parser.add_argument("--debug", action="store_true", help="show debug messages")
+    parser.add_argument("--info", action="store_true", help="show info messages")
+    args = parser.parse_args()
+    verbose = args.verbose or args.debug or args.info
+
+    backend_test(verbose)
