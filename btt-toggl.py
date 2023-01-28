@@ -137,7 +137,7 @@ if __name__ == "__main__":
     except (*NoInternetExceptions, ConnectionError) as e:
         if mode == "status" and general:
             debug("Failing silently due to lack of internet connection")
-            send_to_btt(make_status(data=None, general=True, wid=None, pid=None, v=True))
+            send_to_btt(make_status(data=None, general=True, wid=None, pid=None))
         os._exit(1)
     except (PermissionError, FileNotFoundError) as e:
         msg = "Is your cache file writeable?"

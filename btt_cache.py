@@ -13,7 +13,7 @@ def write_cache(state: State):
     for wid, pids in WID_PID_DICT.items():
         d[wid] = {}
         for pid in pids.keys():
-            d[wid][pid] = make_status(state, False, wid, pid, v=False)
+            d[wid][pid] = make_status(state, False, wid, pid)
 
     if state is not None:
         debug("Adding active tags to cache")

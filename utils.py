@@ -70,7 +70,7 @@ def wid_pid_tag_match(data: Optional[dict]=None, wid: Optional[str]=None, pid: O
 
     return match
 
-def make_status(data: Optional[dict]=None, general: bool=False, wid: Optional[str]=None, pid: Optional[str]=None, tag: Optional[str]=None, v: bool = True):
+def make_status(data: Optional[dict]=None, general: bool=False, wid: Optional[str]=None, pid: Optional[str]=None, tag: Optional[str]=None):
     """Print status as in `data`, in the BTT format."""
     if general and tag is None:
         active = bool(data)
