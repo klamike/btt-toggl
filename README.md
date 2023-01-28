@@ -99,5 +99,6 @@ For other exceptions, `btt-toggl` will exit with error. You can run the script m
 
 ## To-Do:
 
+- Add rate-limit soft-fail (HTTP 429)
 - Update backend comparison to include POST/PUT/PATCH requests
 - Update docs with backend comparison
