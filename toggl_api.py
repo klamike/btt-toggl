@@ -52,10 +52,12 @@ def start(wid: str, pid: str, tag: Optional[str]=None, cache: bool=False):
     if tag:               tags.append(tag)
     if TAG_ALL_ENTRIES: tags.append("btt-toggl")
 
-    from datetime import datetime, timezone
-    now = datetime.now(tz=timezone.utc)
+    import time
+    from datetime import datetime
+    now = time.time()
+    start_rfc3339 = datetime.utcfromtimestamp(now).isoformat(timespec="seconds") + "Z"
 
-    json_dict =  {"tags": tags, "start": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "duration": -1 * int(now.timestamp()),
+    json_dict =  {"tags": tags, "start": start_rfc3339, "duration": -1 * int(now),
                   "workspace_id": int(wid), "project_id": int(pid), "created_with": "btt-toggl"}
 
     state = post(START.format(wid), json_dict)
