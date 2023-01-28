@@ -29,7 +29,7 @@ WID_PID_DICT: dict[str, dict[str, str]] = {'1000000':{'100000001':'W1 P1',
 TAG_ALL_ENTRIES = True
 
 # by default, btt-toggl validates that command line arguments, paths, etc.
-# once you have everything working, set this to False to speed up the script slightly (~5%).
+# once you have everything working, set this to False to speed up the script slightly.
 # if you run into any problems, try setting this to True before you report an issue.
 VALIDATION = True
 
