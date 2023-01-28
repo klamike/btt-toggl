@@ -49,7 +49,7 @@ def start(wid: str, pid: str, tag: Optional[str]=None, cache: bool=False):
     """Start a new entry."""
     debug("Starting new entry (%s, %s, %s)", wid, pid, tag)
     tags: list[str] = []
-    if tag:               tags.append(tag)
+    if tag:             tags.append(tag)
     if TAG_ALL_ENTRIES: tags.append("btt-toggl")
 
     import time
