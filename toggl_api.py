@@ -31,7 +31,7 @@ elif "--pycurl" in sys.argv:
     debug("Using pycurl backend (forced)")
 else:
     from backends.curl import get, post, put, patch, NoInternetExceptions
-    debug("No urllib3 installation found; using curl backend")
+    debug("No backend specified, using curl through subprocess")
 
 
 def get_current(state: Optional[State]=None, force: bool=False) -> State:
