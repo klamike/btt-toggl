@@ -10,7 +10,7 @@ from utils import make_status, send_to_btt, USAGE
 from btt_cache import read_cache, read_cache_tag, write_cache
 from toggl_api import get_current, toggle, start, stop, toggle_tag, add_tag, remove_tag, get_project_dict, NoInternetExceptions
 
-from config import PATH_TO_ACTIVE_IMG, PATH_TO_INACTIVE_IMG, WID_PID_DICT, VALIDATION
+from config import PATH_TO_ACTIVE_IMG, PATH_TO_INACTIVE_IMG, WID_PID_DICT, VALIDATION, TAG_ACTIVE_BACKGROUND_RGB, TAG_INACTIVE_BACKGROUND_RGB
 
 if "--no-validation" in sys.argv:
     debug("Validation disabled")
@@ -34,8 +34,7 @@ def main(general: bool, mode: str, wid: Optional[str]=None, pid: Optional[str]=N
                 send_to_btt(read_cache(wid, pid))
             elif general:
                 debug("Getting non-general status with tag")
-                icon_path = PATH_TO_ACTIVE_IMG if read_cache_tag(tag) else PATH_TO_INACTIVE_IMG
-                send_to_btt(json.dumps({"text": tag, "icon_path": icon_path}))
+                send_to_btt(json.dumps(dict(text=tag, background_color=TAG_ACTIVE_BACKGROUND_RGB if read_cache_tag(tag) else TAG_INACTIVE_BACKGROUND_RGB)))
             else:
                 debug("Getting non-general status with tag and wid/pid")
                 cached = json.loads(read_cache(wid, pid))
